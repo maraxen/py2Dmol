@@ -1,0 +1,1105 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>py2dmol.viewer &#8212; py2Dmol Documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=62df3ba8"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/py2dmol/viewer';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">py2Dmol Documentation</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    py2Dmol Documentation
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/sokrypton/py2Dmol" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/sokrypton/py2Dmol/issues/new?title=Issue%20on%20page%20%2F_modules/py2dmol/viewer.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for py2dmol.viewer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;A Python library for visualizing protein structures in 2D.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib.resources</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">TypedDict</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">gemmi</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTML</span><span class="p">,</span> <span class="n">Javascript</span><span class="p">,</span> <span class="n">display</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">py2dmol</span><span class="w"> </span><span class="kn">import</span> <span class="n">resources</span> <span class="k">as</span> <span class="n">py2dmol_resources</span>
+
+<span class="k">try</span><span class="p">:</span>
+  <span class="kn">from</span><span class="w"> </span><span class="nn">google.colab</span><span class="w"> </span><span class="kn">import</span> <span class="n">output</span> <span class="k">as</span> <span class="n">colab_output</span>  <span class="c1"># type: ignore[import-not-found]</span>
+
+  <span class="n">_is_colab</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pragma: no cover - optional runtime  # noqa: BLE001</span>
+  <span class="n">colab_output</span> <span class="o">=</span> <span class="kc">None</span>
+  <span class="n">_is_colab</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="n">IS_COLAB</span> <span class="o">=</span> <span class="n">_is_colab</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="AtomData">
+<a class="viewcode-back" href="../../api.html#py2dmol.AtomData">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AtomData</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;Type for atom data dictionary.&quot;&quot;&quot;</span>
+
+  <span class="n">coord</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+  <span class="n">plddt</span><span class="p">:</span> <span class="nb">float</span>
+  <span class="n">chain</span><span class="p">:</span> <span class="nb">str</span>
+  <span class="n">atom_type</span><span class="p">:</span> <span class="nb">str</span></div>
+
+
+
+<div class="viewcode-block" id="kabsch">
+<a class="viewcode-back" href="../../api.html#py2dmol.kabsch">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">kabsch</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">return_v</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;Compute the optimal rotation matrix for aligning a to b.</span>
+
+<span class="sd">  Args:</span>
+<span class="sd">      a: The first set of coordinates.</span>
+<span class="sd">      b: The second set of coordinates.</span>
+<span class="sd">      return_v: Whether to return the v matrix.</span>
+
+<span class="sd">  Returns:</span>
+<span class="sd">      The optimal rotation matrix.</span>
+
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">ab</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="o">@</span> <span class="n">b</span>
+  <span class="n">u</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">vh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">ab</span><span class="p">,</span> <span class="n">full_matrices</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+  <span class="n">flip</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">u</span> <span class="o">@</span> <span class="n">vh</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span>
+  <span class="n">flip_b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">flip</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+  <span class="n">u_last_col_flipped</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">flip_b</span><span class="p">,</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+  <span class="n">u</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">u_last_col_flipped</span>
+  <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">u</span> <span class="o">@</span> <span class="n">vh</span>
+  <span class="k">return</span> <span class="n">u</span> <span class="k">if</span> <span class="n">return_v</span> <span class="k">else</span> <span class="n">rotation_matrix</span></div>
+
+
+
+<div class="viewcode-block" id="align_a_to_b">
+<a class="viewcode-back" href="../../api.html#py2dmol.align_a_to_b">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">align_a_to_b</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;Align coordinate set &#39;a&#39; to &#39;b&#39; using Kabsch algorithm.</span>
+
+<span class="sd">  Args:</span>
+<span class="sd">      a: The first set of coordinates.</span>
+<span class="sd">      b: The second set of coordinates.</span>
+
+<span class="sd">  Returns:</span>
+<span class="sd">      The aligned coordinates.</span>
+
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">a_mean</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="n">a_cent</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">a_mean</span>
+  <span class="n">b_mean</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="n">b_cent</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="n">b_mean</span>
+  <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">kabsch</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">a_cent</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b_cent</span><span class="p">)</span>
+  <span class="k">return</span> <span class="p">(</span><span class="n">a_cent</span> <span class="o">@</span> <span class="n">rotation_matrix</span><span class="p">)</span> <span class="o">+</span> <span class="n">b_mean</span></div>
+
+
+
+<div class="viewcode-block" id="View">
+<a class="viewcode-back" href="../../api.html#py2dmol.View">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">View</span><span class="p">:</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;A class for visualizing protein structures in 2D.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="View.__init__">
+<a class="viewcode-back" href="../../api.html#py2dmol.View.__init__">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span>
+    <span class="n">color</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;rainbow&quot;</span><span class="p">,</span> <span class="s2">&quot;chain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">shadow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">outline</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="n">rotate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+  <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize a protein structure viewer.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        size: Width and height of the viewer in pixels. Defaults to (500, 500).</span>
+<span class="sd">        color: Color mode - &quot;auto&quot; (chooses based on chains), &quot;rainbow&quot;, or &quot;chain&quot;.</span>
+<span class="sd">        shadow: Whether to enable shadow effect. Defaults to True.</span>
+<span class="sd">        outline: Whether to enable outline effect. Defaults to True.</span>
+<span class="sd">        width: Line width for rendering. Defaults to 3.0.</span>
+<span class="sd">        rotate: Whether to enable rotation. Defaults to False.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_initial_color_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;rainbow&quot;</span><span class="p">,</span> <span class="s2">&quot;chain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_color_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;rainbow&quot;</span><span class="p">,</span> <span class="s2">&quot;chain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span>
+
+    <span class="c1"># Store default states</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_initial_shadow_enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">shadow</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_initial_outline_enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">outline</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_initial_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">width</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_initial_rotate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">rotate</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_initial_data_loaded</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_coords</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_plddts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_chains</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_atom_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory_counter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>  <span class="c1"># Unique ID for this viewer instance</span>
+
+    <span class="c1"># Track current trajectory name on Python side</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_current_trajectory_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_get_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Serialize the current coordinate state to a dict.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A dictionary containing the coordinate data.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_coords</span> <span class="ow">is</span> <span class="kc">None</span>
+      <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plddts</span> <span class="ow">is</span> <span class="kc">None</span>
+      <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chains</span> <span class="ow">is</span> <span class="kc">None</span>
+      <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atom_types</span> <span class="ow">is</span> <span class="kc">None</span>
+    <span class="p">):</span>
+      <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;coords&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;plddts&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;chains&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;atom_types&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="s2">&quot;coords&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coords</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+      <span class="s2">&quot;plddts&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plddts</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+      <span class="s2">&quot;chains&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chains</span><span class="p">),</span>
+      <span class="s2">&quot;atom_types&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_atom_types</span><span class="p">),</span>
+    <span class="p">}</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_update</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">coords</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">plddts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">chains</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">atom_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+  <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update the internal state with new data, aligning coords.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        coords: The new coordinates.</span>
+<span class="sd">        plddts: The new pLDDT scores.</span>
+<span class="sd">        chains: The new chain identifiers.</span>
+<span class="sd">        atom_types: The new atom types.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_coords</span> <span class="o">=</span> <span class="n">coords</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_coords</span> <span class="o">=</span> <span class="n">align_a_to_b</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coords</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_plddts</span> <span class="o">=</span> <span class="n">plddts</span> <span class="k">if</span> <span class="n">plddts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mf">50.0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_chains</span> <span class="o">=</span> <span class="n">chains</span> <span class="k">if</span> <span class="n">chains</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_atom_types</span> <span class="o">=</span> <span class="n">atom_types</span> <span class="k">if</span> <span class="n">atom_types</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_plddts</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_coords</span><span class="p">):</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;pLDDT length mismatch. Resetting to default.&quot;</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_plddts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mf">50.0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chains</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chains</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_coords</span><span class="p">):</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Chains length mismatch. Resetting to default.&quot;</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_chains</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atom_types</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_atom_types</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_coords</span><span class="p">):</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Atom types length mismatch. Resetting to default.&quot;</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_atom_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_send_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Robustly send a message to the viewer, queuing if not ready.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        message_dict: The message to send.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">viewer_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span>
+    <span class="n">message_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">message_dict</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">IS_COLAB</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_send_colab_message</span><span class="p">(</span><span class="n">message_dict</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_send_jupyter_message</span><span class="p">(</span><span class="n">viewer_id</span><span class="p">,</span> <span class="n">message_json</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_send_colab_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send a message to the viewer in a Colab environment.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        message_dict: The message to send.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">js_code</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">message_dict</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;py2DmolUpdate&quot;</span><span class="p">:</span>
+      <span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">message_dict</span><span class="p">[</span><span class="s2">&quot;payload&quot;</span><span class="p">])</span>
+      <span class="n">json_data_escaped</span> <span class="o">=</span> <span class="n">json_data</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\\\\</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;`&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">`&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;$&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">$&quot;</span><span class="p">)</span>
+      <span class="n">js_code</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;window.handlePythonUpdate(`</span><span class="si">{</span><span class="n">json_data_escaped</span><span class="si">}</span><span class="s2">`);&quot;</span>
+    <span class="k">elif</span> <span class="n">message_dict</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;py2DmolNewTrajectory&quot;</span><span class="p">:</span>
+      <span class="n">js_code</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;window.handlePythonNewTrajectory(&#39;</span><span class="si">{</span><span class="n">message_dict</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39;);&quot;</span>
+    <span class="k">elif</span> <span class="n">message_dict</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;py2DmolClearAll&quot;</span><span class="p">:</span>
+      <span class="n">js_code</span> <span class="o">=</span> <span class="s2">&quot;window.handlePythonClearAll();&quot;</span>
+
+    <span class="k">if</span> <span class="n">js_code</span> <span class="ow">and</span> <span class="n">colab_output</span><span class="p">:</span>
+      <span class="k">try</span><span class="p">:</span>
+        <span class="n">colab_output</span><span class="o">.</span><span class="n">eval_js</span><span class="p">(</span><span class="n">js_code</span><span class="p">,</span> <span class="n">ignore_result</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+      <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Error sending message to Colab&quot;</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_send_jupyter_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">viewer_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">message_json</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send a message to the viewer in a Jupyter environment.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        viewer_id: The ID of the viewer.</span>
+<span class="sd">        message_json: The message to send, as a JSON string.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">js_code</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        (function() </span><span class="se">{{</span>
+<span class="s2">            if (!window.py2dmol_queue) window.py2dmol_queue = </span><span class="se">{{}}</span><span class="s2">;</span>
+<span class="s2">            if (!window.py2dmol_ready_flags) window.py2dmol_ready_flags = </span><span class="se">{{}}</span><span class="s2">;</span>
+<span class="s2">            if (!window.py2dmol_queue[&#39;</span><span class="si">{</span><span class="n">viewer_id</span><span class="si">}</span><span class="s2">&#39;]) </span><span class="se">{{</span>
+<span class="s2">                window.py2dmol_queue[&#39;</span><span class="si">{</span><span class="n">viewer_id</span><span class="si">}</span><span class="s2">&#39;] = [];</span>
+<span class="s2">            </span><span class="se">}}</span>
+<span class="s2">            let msg = </span><span class="si">{</span><span class="n">message_json</span><span class="si">}</span><span class="s2">;</span>
+<span class="s2">            if (window.py2dmol_ready_flags[&#39;</span><span class="si">{</span><span class="n">viewer_id</span><span class="si">}</span><span class="s2">&#39;] === true) </span><span class="se">{{</span>
+<span class="s2">                let iframe = document.querySelector(&#39;iframe[data-viewer-id=&quot;</span><span class="si">{</span><span class="n">viewer_id</span><span class="si">}</span><span class="s2">&quot;]&#39;);</span>
+<span class="s2">                if (iframe &amp;&amp; iframe.contentWindow) </span><span class="se">{{</span>
+<span class="s2">                    iframe.contentWindow.postMessage(msg, &#39;*&#39;);</span>
+<span class="s2">                </span><span class="se">}}</span><span class="s2"> else </span><span class="se">{{</span>
+<span class="s2">                     console.error(</span>
+<span class="s2">                        &#39;py2Dmol: iframe </span><span class="si">{</span><span class="n">viewer_id</span><span class="si">}</span><span class="s2"> was ready but not found. Re-queuing.&#39;</span>
+<span class="s2">                     );</span>
+<span class="s2">                     window.py2dmol_queue[&#39;</span><span class="si">{</span><span class="n">viewer_id</span><span class="si">}</span><span class="s2">&#39;].push(msg);</span>
+<span class="s2">                </span><span class="se">}}</span>
+<span class="s2">            </span><span class="se">}}</span><span class="s2"> else </span><span class="se">{{</span>
+<span class="s2">                window.py2dmol_queue[&#39;</span><span class="si">{</span><span class="n">viewer_id</span><span class="si">}</span><span class="s2">&#39;].push(msg);</span>
+<span class="s2">            </span><span class="se">}}</span>
+<span class="s2">        </span><span class="se">}}</span><span class="s2">)();</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">display</span><span class="p">(</span><span class="n">Javascript</span><span class="p">(</span><span class="n">js_code</span><span class="p">))</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_display_viewer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render the iframe and handshake script for the first time.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="k">with</span> <span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">open_text</span><span class="p">(</span>
+        <span class="n">py2dmol_resources</span><span class="p">,</span>
+        <span class="s2">&quot;pseudo_3D_viewer.html&quot;</span><span class="p">,</span>
+      <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">html_template</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+      <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Could not find the HTML template file.&quot;</span><span class="p">)</span>
+      <span class="k">return</span>
+
+    <span class="c1"># Ensure color mode is never &quot;auto&quot; when sending to HTML</span>
+    <span class="c1"># Fall back to &quot;rainbow&quot; if somehow still &quot;auto&quot;</span>
+    <span class="n">color_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_color_mode</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_color_mode</span> <span class="o">!=</span> <span class="s2">&quot;auto&quot;</span> <span class="k">else</span> <span class="s2">&quot;rainbow&quot;</span>
+
+    <span class="c1"># Use the resolved color mode for the config sent to HTML</span>
+    <span class="n">viewer_config</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+      <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">color_mode</span><span class="p">,</span>  <span class="c1"># Send &#39;rainbow&#39; or &#39;chain&#39;, never &#39;auto&#39;</span>
+      <span class="s2">&quot;viewer_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span><span class="p">,</span>
+      <span class="s2">&quot;default_shadow&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_shadow_enabled</span><span class="p">,</span>
+      <span class="s2">&quot;default_outline&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_outline_enabled</span><span class="p">,</span>
+      <span class="s2">&quot;default_width&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_width</span><span class="p">,</span>
+      <span class="s2">&quot;default_rotate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_rotate</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">config_script</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        &lt;script id=&quot;viewer-config&quot;&gt;</span>
+<span class="s2">          window.viewerConfig = </span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">viewer_config</span><span class="p">)</span><span class="si">}</span><span class="s2">;</span>
+<span class="s2">        &lt;/script&gt;</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+    <span class="n">data_script</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        &lt;script id=&quot;protein-data&quot;&gt;</span>
+<span class="s2">          window.proteinData = { &quot;coords&quot;: [], &quot;plddts&quot;: [], &quot;chains&quot;: [], &quot;atom_types&quot;: [] };</span>
+<span class="s2">        &lt;/script&gt;</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+    <span class="n">injection_scripts</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">config_script</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">data_script</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">IS_COLAB</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_display_jupyter_viewer</span><span class="p">(</span><span class="n">html_template</span><span class="p">,</span> <span class="n">injection_scripts</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_display_colab_viewer</span><span class="p">(</span><span class="n">html_template</span><span class="p">,</span> <span class="n">injection_scripts</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_display_jupyter_viewer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">html_template</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">injection_scripts</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display the viewer in a Jupyter environment.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        html_template: The HTML template for the viewer.</span>
+<span class="sd">        injection_scripts: The scripts to inject into the HTML.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">final_html</span> <span class="o">=</span> <span class="n">html_template</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&lt;!-- DATA_INJECTION_POINT --&gt;&quot;</span><span class="p">,</span> <span class="n">injection_scripts</span><span class="p">)</span>
+    <span class="n">final_html_escaped</span> <span class="o">=</span> <span class="n">final_html</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s2">&quot;&amp;quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&amp;#39;&quot;</span><span class="p">)</span>
+    <span class="n">handshake_script</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        &lt;script&gt;</span>
+<span class="s2">            if (!window.py2dmol_queue) window.py2dmol_queue = </span><span class="se">{{}}</span><span class="s2">;</span>
+<span class="s2">            if (!window.py2dmol_ready_flags) window.py2dmol_ready_flags = </span><span class="se">{{}}</span><span class="s2">;</span>
+<span class="s2">            if (!window.py2dmol_queue[&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span><span class="si">}</span><span class="s2">&#39;]) </span><span class="se">{{</span>
+<span class="s2">                window.py2dmol_queue[&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span><span class="si">}</span><span class="s2">&#39;] = [];</span>
+<span class="s2">            </span><span class="se">}}</span>
+<span class="s2">            window.py2dmol_ready_flags[&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span><span class="si">}</span><span class="s2">&#39;] = false;</span>
+<span class="s2">            if (!window.py2dmol_message_listener_added) </span><span class="se">{{</span>
+<span class="s2">                window.addEventListener(&#39;message&#39;, (event) =&gt; </span><span class="se">{{</span>
+<span class="s2">                    if (</span>
+<span class="s2">                        event.data &amp;&amp;</span>
+<span class="s2">                        event.data.type === &#39;py2dmol_ready&#39; &amp;&amp;</span>
+<span class="s2">                        event.data.viewer_id</span>
+<span class="s2">                    ) </span><span class="se">{{</span>
+<span class="s2">                        let viewerId = event.data.viewer_id;</span>
+<span class="s2">                        window.py2dmol_ready_flags[viewerId] = true;</span>
+<span class="s2">                        let iframe = document.querySelector(</span>
+<span class="s2">                            `iframe[data-viewer-id=&quot;$</span><span class="se">{{</span><span class="s2">viewerId</span><span class="se">}}</span><span class="s2">&quot;]`</span>
+<span class="s2">                        );</span>
+<span class="s2">                        if (!iframe || !iframe.contentWindow) </span><span class="se">{{</span>
+<span class="s2">                            console.error(</span>
+<span class="s2">                                `py2Dmol: Received ready signal from $</span><span class="se">{{</span><span class="s2">viewerId</span><span class="se">}}</span><span class="s2"> ` +</span>
+<span class="s2">                                `but cannot find iframe.`</span>
+<span class="s2">                            );</span>
+<span class="s2">                            return;</span>
+<span class="s2">                        </span><span class="se">}}</span>
+<span class="s2">                        let queue = window.py2dmol_queue[viewerId];</span>
+<span class="s2">                        if (queue) </span><span class="se">{{</span>
+<span class="s2">                            while (queue.length &gt; 0) </span><span class="se">{{</span>
+<span class="s2">                                let msg = queue.shift();</span>
+<span class="s2">                                iframe.contentWindow.postMessage(msg, &#39;*&#39;);</span>
+<span class="s2">                            </span><span class="se">}}</span>
+<span class="s2">                        </span><span class="se">}}</span>
+<span class="s2">                    </span><span class="se">}}</span>
+<span class="s2">                </span><span class="se">}}</span><span class="s2">);</span>
+<span class="s2">                // Mark listener as added so we don&#39;t add it multiple times</span>
+<span class="s2">                window.py2dmol_message_listener_added = true;</span>
+<span class="s2">            </span><span class="se">}}</span>
+<span class="s2">        &lt;/script&gt;</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+
+    <span class="c1"># Modified: Width remains at 220px</span>
+    <span class="n">iframe_html</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        &lt;iframe</span>
+<span class="s2">            data-viewer-id=&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_viewer_id</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="s2">            srcdoc=&quot;</span><span class="si">{</span><span class="n">final_html_escaped</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="s2">            style=&quot;width: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">220</span><span class="si">}</span><span class="s2">px; height: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">80</span><span class="si">}</span><span class="s2">px; border: none;&quot;</span>
+<span class="s2">            sandbox=&quot;allow-scripts allow-same-origin&quot;</span>
+<span class="s2">        &gt;&lt;/iframe&gt;</span>
+<span class="s2">        </span><span class="si">{</span><span class="n">handshake_script</span><span class="si">}</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">display</span><span class="p">(</span><span class="n">HTML</span><span class="p">(</span><span class="n">iframe_html</span><span class="p">))</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_display_colab_viewer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">html_template</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">injection_scripts</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display the viewer in a Colab environment.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        html_template: The HTML template for the viewer.</span>
+<span class="sd">        injection_scripts: The scripts to inject into the HTML.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">final_html</span> <span class="o">=</span> <span class="n">html_template</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&lt;!-- DATA_INJECTION_POINT --&gt;&quot;</span><span class="p">,</span> <span class="n">injection_scripts</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">display</span><span class="p">(</span><span class="n">HTML</span><span class="p">(</span><span class="n">final_html</span><span class="p">))</span>
+
+<div class="viewcode-block" id="View.clear">
+<a class="viewcode-back" href="../../api.html#py2dmol.View.clear">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clear all trajectories and frames from the viewer.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_data_loaded</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_send_message</span><span class="p">(</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;py2DmolClearAll&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+      <span class="p">)</span>
+
+    <span class="c1"># Reset Python-side state</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_initial_data_loaded</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Next call to add() will need to re-display</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_coords</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_plddts</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_chains</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_atom_types</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory_counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_current_trajectory_name</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="View.new_traj">
+<a class="viewcode-back" href="../../api.html#py2dmol.View.new_traj">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">new_traj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectory_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start a new trajectory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        trajectory_name: Name for the new trajectory. If None, generates a default name.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># This is a new trajectory, reset the alignment reference</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_coords</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_plddts</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_chains</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_atom_types</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">trajectory_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">trajectory_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_trajectory_counter</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># Set Python-side trajectory name</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_current_trajectory_name</span> <span class="o">=</span> <span class="n">trajectory_name</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_send_message</span><span class="p">(</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;py2DmolNewTrajectory&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">trajectory_name</span><span class="p">,</span>
+      <span class="p">},</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="View.add">
+<a class="viewcode-back" href="../../api.html#py2dmol.View.add">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">coords</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">plddts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">chains</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">atom_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">new_traj</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">trajectory_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+  <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a new frame of data to the viewer.</span>
+
+<span class="sd">    If this is the first time &#39;add&#39; is called, it will display the viewer.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        coords: Nx3 array of coordinates.</span>
+<span class="sd">        plddts: N-length array of pLDDT scores.</span>
+<span class="sd">        chains: N-length list of chain identifiers.</span>
+<span class="sd">        atom_types: N-length list of atom types (&#39;P&#39;, &#39;D&#39;, &#39;R&#39;, &#39;L&#39;).</span>
+<span class="sd">        new_traj: If True, starts a new trajectory. Defaults to False.</span>
+<span class="sd">        trajectory_name: Name for the new trajectory. Only used if new_traj=True.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Auto-color logic</span>
+    <span class="c1"># If this is the first data being added AND color is &#39;auto&#39;, decide now.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_data_loaded</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_color_mode</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">chains</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">unique_chains</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">chains</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">strip</span><span class="p">()}</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_chains</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_color_mode</span> <span class="o">=</span> <span class="s2">&quot;chain&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_color_mode</span> <span class="o">=</span> <span class="s2">&quot;rainbow&quot;</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># If no chains provided for the first frame, default to rainbow</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_color_mode</span> <span class="o">=</span> <span class="s2">&quot;rainbow&quot;</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_data_loaded</span><span class="p">:</span>
+      <span class="c1"># If color was specified (not auto), use it directly</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_color_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_color_mode</span>
+
+    <span class="c1"># 1. Display the iframe if this is the very first call</span>
+    <span class="c1"># This now uses self._resolved_color_mode which is no longer &quot;auto&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_data_loaded</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_display_viewer</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_initial_data_loaded</span> <span class="o">=</span> <span class="kc">True</span>
+      <span class="n">new_traj</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># First call always starts a new trajectory</span>
+
+    <span class="c1"># 2. Handle new trajectory creation</span>
+    <span class="c1"># This will now also set self._current_trajectory_name</span>
+    <span class="k">if</span> <span class="n">new_traj</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">new_traj</span><span class="p">(</span><span class="n">trajectory_name</span><span class="p">)</span>
+
+    <span class="c1"># 3. Update internal state with new coordinates (aligned)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">plddts</span><span class="p">,</span> <span class="n">chains</span><span class="p">,</span> <span class="n">atom_types</span><span class="p">)</span>
+
+    <span class="c1"># 4. Send the frame data</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_send_message</span><span class="p">(</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;py2DmolUpdate&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;trajectoryName&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_trajectory_name</span><span class="p">,</span>
+        <span class="s2">&quot;payload&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_data_dict</span><span class="p">(),</span>  <span class="c1"># _get_data_dict uses self._coords, which is now aligned</span>
+      <span class="p">},</span>
+    <span class="p">)</span></div>
+
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_process_residue</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">residue</span><span class="p">:</span> <span class="n">gemmi</span><span class="o">.</span><span class="n">Residue</span><span class="p">,</span>
+    <span class="n">chain_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+  <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AtomData</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">AtomData</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a single residue and extract its data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        residue: The residue to process.</span>
+<span class="sd">        chain_name: The name of the chain the residue belongs to.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A dictionary or list of dictionaries containing the residue&#39;s data,</span>
+<span class="sd">        or None if the residue should be skipped.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">residue</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;HOH&quot;</span><span class="p">:</span>
+      <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">residue_info</span> <span class="o">=</span> <span class="n">gemmi</span><span class="o">.</span><span class="n">find_tabulated_residue</span><span class="p">(</span><span class="n">residue</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">residue_info</span><span class="o">.</span><span class="n">is_amino_acid</span><span class="p">():</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_protein_residue</span><span class="p">(</span><span class="n">residue</span><span class="p">,</span> <span class="n">chain_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">residue_info</span><span class="o">.</span><span class="n">is_nucleic_acid</span><span class="p">():</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_nucleic_residue</span><span class="p">(</span><span class="n">residue</span><span class="p">,</span> <span class="n">chain_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_ligand_residue</span><span class="p">(</span><span class="n">residue</span><span class="p">,</span> <span class="n">chain_name</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_process_protein_residue</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">residue</span><span class="p">:</span> <span class="n">gemmi</span><span class="o">.</span><span class="n">Residue</span><span class="p">,</span>
+    <span class="n">chain_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+  <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AtomData</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a protein residue.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        residue: The residue to process.</span>
+<span class="sd">        chain_name: The name of the chain the residue belongs to.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A dictionary containing the residue&#39;s data, or None if the residue should be skipped.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;CA&quot;</span> <span class="ow">in</span> <span class="n">residue</span><span class="p">:</span>
+      <span class="n">atom</span> <span class="o">=</span> <span class="n">residue</span><span class="p">[</span><span class="s2">&quot;CA&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+      <span class="n">atom_data</span><span class="p">:</span> <span class="n">AtomData</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;coord&quot;</span><span class="p">:</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="s2">&quot;plddt&quot;</span><span class="p">:</span> <span class="n">atom</span><span class="o">.</span><span class="n">b_iso</span><span class="p">,</span>
+        <span class="s2">&quot;chain&quot;</span><span class="p">:</span> <span class="n">chain_name</span><span class="p">,</span>
+        <span class="s2">&quot;atom_type&quot;</span><span class="p">:</span> <span class="s2">&quot;P&quot;</span><span class="p">,</span>
+      <span class="p">}</span>
+      <span class="k">return</span> <span class="n">atom_data</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_process_nucleic_residue</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">residue</span><span class="p">:</span> <span class="n">gemmi</span><span class="o">.</span><span class="n">Residue</span><span class="p">,</span>
+    <span class="n">chain_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+  <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AtomData</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a nucleic acid residue.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        residue: The residue to process.</span>
+<span class="sd">        chain_name: The name of the chain the residue belongs to.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A dictionary containing the residue&#39;s data, or None if the residue should be skipped.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">c4_atom</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">&quot;C4&#39;&quot;</span> <span class="ow">in</span> <span class="n">residue</span><span class="p">:</span>
+      <span class="n">c4_atom</span> <span class="o">=</span> <span class="n">residue</span><span class="p">[</span><span class="s2">&quot;C4&#39;&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="s2">&quot;C4*&quot;</span> <span class="ow">in</span> <span class="n">residue</span><span class="p">:</span>
+      <span class="n">c4_atom</span> <span class="o">=</span> <span class="n">residue</span><span class="p">[</span><span class="s2">&quot;C4*&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">c4_atom</span><span class="p">:</span>
+      <span class="n">rna_bases</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;G&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;RA&quot;</span><span class="p">,</span> <span class="s2">&quot;RC&quot;</span><span class="p">,</span> <span class="s2">&quot;RG&quot;</span><span class="p">,</span> <span class="s2">&quot;RU&quot;</span><span class="p">]</span>
+      <span class="n">dna_bases</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DA&quot;</span><span class="p">,</span> <span class="s2">&quot;DC&quot;</span><span class="p">,</span> <span class="s2">&quot;DG&quot;</span><span class="p">,</span> <span class="s2">&quot;DT&quot;</span><span class="p">,</span> <span class="s2">&quot;T&quot;</span><span class="p">]</span>
+
+      <span class="n">atom_type</span> <span class="o">=</span> <span class="s2">&quot;R&quot;</span>
+      <span class="k">if</span> <span class="n">residue</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">rna_bases</span> <span class="ow">or</span> <span class="n">residue</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;R&quot;</span><span class="p">):</span>
+        <span class="n">atom_type</span> <span class="o">=</span> <span class="s2">&quot;R&quot;</span>
+      <span class="k">elif</span> <span class="n">residue</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">dna_bases</span> <span class="ow">or</span> <span class="n">residue</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">):</span>
+        <span class="n">atom_type</span> <span class="o">=</span> <span class="s2">&quot;D&quot;</span>
+
+      <span class="n">atom_data</span><span class="p">:</span> <span class="n">AtomData</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;coord&quot;</span><span class="p">:</span> <span class="n">c4_atom</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="s2">&quot;plddt&quot;</span><span class="p">:</span> <span class="n">c4_atom</span><span class="o">.</span><span class="n">b_iso</span><span class="p">,</span>
+        <span class="s2">&quot;chain&quot;</span><span class="p">:</span> <span class="n">chain_name</span><span class="p">,</span>
+        <span class="s2">&quot;atom_type&quot;</span><span class="p">:</span> <span class="n">atom_type</span><span class="p">,</span>
+      <span class="p">}</span>
+      <span class="k">return</span> <span class="n">atom_data</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_process_ligand_residue</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">residue</span><span class="p">:</span> <span class="n">gemmi</span><span class="o">.</span><span class="n">Residue</span><span class="p">,</span>
+    <span class="n">chain_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+  <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">AtomData</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a ligand residue.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        residue: The residue to process.</span>
+<span class="sd">        chain_name: The name of the chain the residue belongs to.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of dictionaries containing the residue&#39;s data.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">AtomData</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">residue</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;H&quot;</span><span class="p">:</span>
+        <span class="n">atom_data</span><span class="p">:</span> <span class="n">AtomData</span> <span class="o">=</span> <span class="p">{</span>
+          <span class="s2">&quot;coord&quot;</span><span class="p">:</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+          <span class="s2">&quot;plddt&quot;</span><span class="p">:</span> <span class="n">atom</span><span class="o">.</span><span class="n">b_iso</span><span class="p">,</span>
+          <span class="s2">&quot;chain&quot;</span><span class="p">:</span> <span class="n">chain_name</span><span class="p">,</span>
+          <span class="s2">&quot;atom_type&quot;</span><span class="p">:</span> <span class="s2">&quot;L&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom_data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="View.add_pdb">
+<a class="viewcode-back" href="../../api.html#py2dmol.View.add_pdb">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">add_pdb</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">chains</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">new_traj</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">trajectory_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+  <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a structure from a PDB or CIF file and add it to the viewer.</span>
+
+<span class="sd">    Multi-model files are added as a single trajectory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        filepath: Path to the PDB or CIF file.</span>
+<span class="sd">        chains: Specific chains to load. Defaults to all.</span>
+<span class="sd">        new_traj: If True, starts a new trajectory. Defaults to False.</span>
+<span class="sd">        trajectory_name: Name for the new trajectory. Only used if new_traj=True.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">structure</span> <span class="o">=</span> <span class="n">gemmi</span><span class="o">.</span><span class="n">read_structure</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+
+    <span class="n">first_model_added</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">structure</span><span class="p">:</span>
+      <span class="c1"># Default behavior: process the model from the file directly</span>
+      <span class="n">model_to_process</span> <span class="o">=</span> <span class="n">model</span>
+
+      <span class="n">coords</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+      <span class="n">plddts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+      <span class="n">atom_chains</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+      <span class="n">atom_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+      <span class="c1"># Iterate over the chains in the processed model</span>
+      <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">model_to_process</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">chains</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">chain</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">chains</span><span class="p">:</span>
+          <span class="k">for</span> <span class="n">residue</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">:</span>
+            <span class="c1"># Skip water</span>
+            <span class="k">if</span> <span class="n">residue</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;HOH&quot;</span><span class="p">:</span>
+              <span class="k">continue</span>
+
+            <span class="n">residue_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_residue</span><span class="p">(</span><span class="n">residue</span><span class="p">,</span> <span class="n">chain</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">residue_data</span><span class="p">:</span>
+              <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">residue_data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">atom_data</span> <span class="ow">in</span> <span class="n">residue_data</span><span class="p">:</span>
+                  <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom_data</span><span class="p">[</span><span class="s2">&quot;coord&quot;</span><span class="p">])</span>
+                  <span class="n">plddts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom_data</span><span class="p">[</span><span class="s2">&quot;plddt&quot;</span><span class="p">])</span>
+                  <span class="n">atom_chains</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom_data</span><span class="p">[</span><span class="s2">&quot;chain&quot;</span><span class="p">])</span>
+                  <span class="n">atom_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom_data</span><span class="p">[</span><span class="s2">&quot;atom_type&quot;</span><span class="p">])</span>
+              <span class="k">else</span><span class="p">:</span>
+                <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">residue_data</span><span class="p">[</span><span class="s2">&quot;coord&quot;</span><span class="p">])</span>
+                <span class="n">plddts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">residue_data</span><span class="p">[</span><span class="s2">&quot;plddt&quot;</span><span class="p">])</span>
+                <span class="n">atom_chains</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">residue_data</span><span class="p">[</span><span class="s2">&quot;chain&quot;</span><span class="p">])</span>
+                <span class="n">atom_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">residue_data</span><span class="p">[</span><span class="s2">&quot;atom_type&quot;</span><span class="p">])</span>
+
+      <span class="k">if</span> <span class="n">coords</span><span class="p">:</span>
+        <span class="n">coords_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">plddts_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">plddts</span><span class="p">)</span>
+
+        <span class="c1"># Only honor new_traj for the *first* model</span>
+        <span class="n">current_model_new_traj</span> <span class="o">=</span> <span class="n">new_traj</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">first_model_added</span>
+
+        <span class="c1"># Call add() - this will handle auto-color on the first call</span>
+        <span class="c1"># and pass the trajectory name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+          <span class="n">coords_arr</span><span class="p">,</span>
+          <span class="n">plddts_arr</span><span class="p">,</span>
+          <span class="n">atom_chains</span><span class="p">,</span>
+          <span class="n">atom_types</span><span class="p">,</span>
+          <span class="n">new_traj</span><span class="o">=</span><span class="n">current_model_new_traj</span><span class="p">,</span>
+          <span class="n">trajectory_name</span><span class="o">=</span><span class="n">trajectory_name</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">first_model_added</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="View.from_pdb">
+<a class="viewcode-back" href="../../api.html#py2dmol.View.from_pdb">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">from_pdb</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">chains</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">new_traj</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+  <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a structure from a PDB or CIF file and start a new trajectory.</span>
+
+<span class="sd">    This is a convenience wrapper for add_pdb(..., new_traj=True).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        filepath: Path to the PDB or CIF file.</span>
+<span class="sd">        chains: Specific chains to load. Defaults to all.</span>
+<span class="sd">        new_traj: If True, starts a new trajectory. Defaults to True.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">add_pdb</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">chains</span><span class="o">=</span><span class="n">chains</span><span class="p">,</span> <span class="n">new_traj</span><span class="o">=</span><span class="n">new_traj</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By sokrypton, maraxen
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, sokrypton, maraxen.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

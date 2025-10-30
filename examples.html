@@ -1,0 +1,748 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Examples &#8212; py2Dmol Documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=62df3ba8"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=30646c52"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="prev" title="Usage Guide" href="usage.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">py2Dmol Documentation</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="index.html">
+                    py2Dmol Documentation
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage Guide</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/sokrypton/py2Dmol" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/sokrypton/py2Dmol/edit/main/docs/source/examples.rst" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/sokrypton/py2Dmol/issues/new?title=Issue%20on%20page%20%2Fexamples.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/examples.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Examples</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-protein-visualization">Basic Protein Visualization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#alpha-helix-animation">Alpha Helix Animation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mixed-protein-dna-ligand-complex">Mixed Protein-DNA-Ligand Complex</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#alphafold-prediction-with-plddt-coloring">AlphaFold Prediction with pLDDT Coloring</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-chain-complex">Multi-Chain Complex</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-different-simulations">Comparing Different Simulations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-styling">Custom Styling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-specific-chains">Loading Specific Chains</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-notebook-example">Interactive Notebook Example</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h1>
+<p>This page contains various examples demonstrating the capabilities of py2Dmol.</p>
+<section id="basic-protein-visualization">
+<h2>Basic Protein Visualization<a class="headerlink" href="#basic-protein-visualization" title="Link to this heading">#</a></h2>
+<p>Simple protein structure visualization:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">py2dmol</span>
+
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">py2dmol</span><span class="o">.</span><span class="n">view</span><span class="p">()</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_pdb</span><span class="p">(</span><span class="s1">&#39;1ubq.pdb&#39;</span><span class="p">)</span>  <span class="c1"># Ubiquitin</span>
+</pre></div>
+</div>
+</section>
+<section id="alpha-helix-animation">
+<h2>Alpha Helix Animation<a class="headerlink" href="#alpha-helix-animation" title="Link to this heading">#</a></h2>
+<p>Generate and animate an alpha helix being twisted into a superhelix:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">py2dmol</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_alpha_helix_on_superhelix</span><span class="p">(</span><span class="n">n_residues</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">super_radius</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">super_turns</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate alpha helix wrapped around a cylinder (superhelix).</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    - n_residues: number of residues</span>
+<span class="sd">    - super_radius: radius of the superhelix (0 = straight helix)</span>
+<span class="sd">    - super_turns: number of superhelical turns</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">helix_radius</span> <span class="o">=</span> <span class="mf">2.3</span>  <span class="c1"># Å from helix axis to CA</span>
+    <span class="n">rise_per_residue</span> <span class="o">=</span> <span class="mf">1.5</span>  <span class="c1"># Å along helix axis</span>
+    <span class="n">rotation_per_residue</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>  <span class="c1"># 100 degrees</span>
+
+    <span class="n">helix_length</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_residues</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">rise_per_residue</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_residues</span><span class="p">):</span>
+        <span class="c1"># Alpha helix coordinates</span>
+        <span class="n">helix_angle</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">rotation_per_residue</span>
+        <span class="n">local_x</span> <span class="o">=</span> <span class="n">helix_radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">helix_angle</span><span class="p">)</span>
+        <span class="n">local_y</span> <span class="o">=</span> <span class="n">helix_radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">helix_angle</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">rise_per_residue</span>
+
+        <span class="k">if</span> <span class="n">super_radius</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Straight helix</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">local_x</span><span class="p">,</span> <span class="n">local_y</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Wrap around superhelix</span>
+            <span class="n">super_angle</span> <span class="o">=</span> <span class="p">(</span><span class="n">z</span> <span class="o">/</span> <span class="n">helix_length</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">super_turns</span>
+
+            <span class="c1"># Transform: local helix coordinates → superhelix</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">super_radius</span> <span class="o">+</span> <span class="n">local_x</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">super_angle</span><span class="p">)</span> <span class="o">-</span> <span class="n">local_y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">super_angle</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">super_radius</span> <span class="o">+</span> <span class="n">local_x</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">super_angle</span><span class="p">)</span> <span class="o">+</span> <span class="n">local_y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">super_angle</span><span class="p">)</span>
+
+        <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+<span class="c1"># Create initial straight helix</span>
+<span class="n">coords</span> <span class="o">=</span> <span class="n">generate_alpha_helix_on_superhelix</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">super_radius</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">super_turns</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">plddts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">95</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">chains</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span>
+<span class="n">atom_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;P&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span>
+
+<span class="c1"># Display</span>
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">py2dmol</span><span class="o">.</span><span class="n">view</span><span class="p">()</span>
+
+<span class="c1"># Animate: gradually add superhelical twist</span>
+<span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">21</span><span class="p">):</span>
+    <span class="n">super_radius</span> <span class="o">=</span> <span class="mf">10.0</span>  <span class="c1"># Radius of the &quot;pole&quot;</span>
+    <span class="n">super_turns</span> <span class="o">=</span> <span class="n">frame</span> <span class="o">*</span> <span class="mf">0.075</span>  <span class="c1"># Gradually increase from 0 to 1.5 turns</span>
+    <span class="n">twisted_coords</span> <span class="o">=</span> <span class="n">generate_alpha_helix_on_superhelix</span><span class="p">(</span>
+        <span class="mi">100</span><span class="p">,</span> <span class="n">super_radius</span><span class="o">=</span><span class="n">super_radius</span><span class="p">,</span> <span class="n">super_turns</span><span class="o">=</span><span class="n">super_turns</span>
+    <span class="p">)</span>
+    <span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">twisted_coords</span><span class="p">,</span> <span class="n">plddts</span><span class="p">,</span> <span class="n">chains</span><span class="p">,</span> <span class="n">atom_types</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="mixed-protein-dna-ligand-complex">
+<h2>Mixed Protein-DNA-Ligand Complex<a class="headerlink" href="#mixed-protein-dna-ligand-complex" title="Link to this heading">#</a></h2>
+<p>Create a complex visualization with multiple molecule types:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">py2dmol</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_alpha_helix</span><span class="p">(</span><span class="n">n_residues</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate ideal alpha helix (CA-CA ~3.8 Å).&quot;&quot;&quot;</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="mf">2.3</span>
+    <span class="n">rise_per_residue</span> <span class="o">=</span> <span class="mf">1.5</span>
+    <span class="n">rotation_per_residue</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_residues</span><span class="p">):</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">rotation_per_residue</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">rise_per_residue</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_dna_strand</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate B-DNA backbone (C4&#39;-C4&#39; ~7.0 Å).&quot;&quot;&quot;</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="mf">10.0</span>  <span class="c1"># Distance from helix axis to C4&#39;</span>
+    <span class="n">rise_per_base</span> <span class="o">=</span> <span class="mf">3.4</span>  <span class="c1"># B-DNA rise</span>
+    <span class="n">rotation_per_base</span> <span class="o">=</span> <span class="mi">36</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>  <span class="c1"># 10 bases per turn</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bases</span><span class="p">):</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">rotation_per_base</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">rise_per_base</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_benzene_ring</span><span class="p">(</span><span class="n">center</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate benzene-like small molecule (C-C 1.4 Å).&quot;&quot;&quot;</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">bond_length</span> <span class="o">=</span> <span class="mf">1.4</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span>  <span class="c1"># 60 degrees between carbons</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">bond_length</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">bond_length</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+<span class="c1"># Create protein helix</span>
+<span class="n">protein_coords</span> <span class="o">=</span> <span class="n">generate_alpha_helix</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="n">protein_plddts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">)</span>
+<span class="n">protein_chains</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">50</span>
+<span class="n">protein_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;P&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">50</span>
+
+<span class="c1"># Create DNA strand</span>
+<span class="n">dna_coords</span> <span class="o">=</span> <span class="n">generate_dna_strand</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="n">dna_plddts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mf">85.0</span><span class="p">)</span>
+<span class="n">dna_chains</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">30</span>
+<span class="n">dna_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">30</span>
+
+<span class="c1"># Add a small molecule ligand</span>
+<span class="n">ligand_coords</span> <span class="o">=</span> <span class="n">generate_benzene_ring</span><span class="p">(</span><span class="n">center</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">]))</span>
+<span class="n">ligand_plddts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">70.0</span><span class="p">)</span>
+<span class="n">ligand_chains</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">6</span>
+<span class="n">ligand_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">6</span>
+
+<span class="c1"># Combine all components</span>
+<span class="n">all_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">protein_coords</span><span class="p">,</span> <span class="n">dna_coords</span><span class="p">,</span> <span class="n">ligand_coords</span><span class="p">])</span>
+<span class="n">all_plddts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">protein_plddts</span><span class="p">,</span> <span class="n">dna_plddts</span><span class="p">,</span> <span class="n">ligand_plddts</span><span class="p">])</span>
+<span class="n">all_chains</span> <span class="o">=</span> <span class="n">protein_chains</span> <span class="o">+</span> <span class="n">dna_chains</span> <span class="o">+</span> <span class="n">ligand_chains</span>
+<span class="n">all_types</span> <span class="o">=</span> <span class="n">protein_types</span> <span class="o">+</span> <span class="n">dna_types</span> <span class="o">+</span> <span class="n">ligand_types</span>
+
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">py2dmol</span><span class="o">.</span><span class="n">view</span><span class="p">(</span>
+    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;chain&#39;</span><span class="p">,</span>
+    <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="mi">600</span><span class="p">),</span>
+    <span class="n">width</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span>
+    <span class="n">outline</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">all_coords</span><span class="p">,</span> <span class="n">all_plddts</span><span class="p">,</span> <span class="n">all_chains</span><span class="p">,</span> <span class="n">all_types</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="alphafold-prediction-with-plddt-coloring">
+<h2>AlphaFold Prediction with pLDDT Coloring<a class="headerlink" href="#alphafold-prediction-with-plddt-coloring" title="Link to this heading">#</a></h2>
+<p>Visualize an AlphaFold prediction with confidence scores:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">py2dmol</span>
+
+<span class="c1"># Use pLDDT coloring to show prediction confidence</span>
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">py2dmol</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;plddt&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_pdb</span><span class="p">(</span><span class="s1">&#39;alphafold_prediction.pdb&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="multi-chain-complex">
+<h2>Multi-Chain Complex<a class="headerlink" href="#multi-chain-complex" title="Link to this heading">#</a></h2>
+<p>Visualize a multi-chain protein complex with distinct chain colors:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">py2dmol</span>
+
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">py2dmol</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;chain&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_pdb</span><span class="p">(</span><span class="s1">&#39;protein_complex.pdb&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="comparing-different-simulations">
+<h2>Comparing Different Simulations<a class="headerlink" href="#comparing-different-simulations" title="Link to this heading">#</a></h2>
+<p>Load and compare multiple molecular dynamics trajectories:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">py2dmol</span>
+
+<span class="c1"># Load first trajectory</span>
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">py2dmol</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_pdb</span><span class="p">(</span><span class="s1">&#39;md_simulation_1.pdb&#39;</span><span class="p">)</span>
+
+<span class="c1"># Load second trajectory as a new trajectory</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_pdb</span><span class="p">(</span><span class="s1">&#39;md_simulation_2.pdb&#39;</span><span class="p">,</span> <span class="n">new_traj</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Load third trajectory</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_pdb</span><span class="p">(</span><span class="s1">&#39;md_simulation_3.pdb&#39;</span><span class="p">,</span> <span class="n">new_traj</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Use the dropdown to switch between trajectories</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-styling">
+<h2>Custom Styling<a class="headerlink" href="#custom-styling" title="Link to this heading">#</a></h2>
+<p>Customize the appearance for publication-quality figures:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">py2dmol</span>
+
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">py2dmol</span><span class="o">.</span><span class="n">view</span><span class="p">(</span>
+    <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span> <span class="mi">800</span><span class="p">),</span>        <span class="c1"># Larger size</span>
+    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;rainbow&#39;</span><span class="p">,</span>        <span class="c1"># Rainbow coloring</span>
+    <span class="n">shadow</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>           <span class="c1"># Disable shadows</span>
+    <span class="n">outline</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>           <span class="c1"># Enable outlines</span>
+    <span class="n">width</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>              <span class="c1"># Thinner lines</span>
+    <span class="n">rotate</span><span class="o">=</span><span class="kc">True</span>             <span class="c1"># Enable auto-rotation</span>
+<span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_pdb</span><span class="p">(</span><span class="s1">&#39;structure.pdb&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="loading-specific-chains">
+<h2>Loading Specific Chains<a class="headerlink" href="#loading-specific-chains" title="Link to this heading">#</a></h2>
+<p>Visualize only specific chains from a multi-chain structure:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">py2dmol</span>
+
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">py2dmol</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;chain&#39;</span><span class="p">)</span>
+
+<span class="c1"># Load only chains A and B</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_pdb</span><span class="p">(</span><span class="s1">&#39;complex.pdb&#39;</span><span class="p">,</span> <span class="n">chains</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="interactive-notebook-example">
+<h2>Interactive Notebook Example<a class="headerlink" href="#interactive-notebook-example" title="Link to this heading">#</a></h2>
+<p>For a complete interactive example in Jupyter/Colab, check out our example notebook:</p>
+<a href="https://colab.research.google.com/github/maraxen/py2Dmol/blob/main/example/example.ipynb" target="_blank">
+<img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a></section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="usage.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Usage Guide</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="api.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API Reference</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-protein-visualization">Basic Protein Visualization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#alpha-helix-animation">Alpha Helix Animation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mixed-protein-dna-ligand-complex">Mixed Protein-DNA-Ligand Complex</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#alphafold-prediction-with-plddt-coloring">AlphaFold Prediction with pLDDT Coloring</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-chain-complex">Multi-Chain Complex</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-different-simulations">Comparing Different Simulations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-styling">Custom Styling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-specific-chains">Loading Specific Chains</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-notebook-example">Interactive Notebook Example</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By sokrypton, maraxen
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, sokrypton, maraxen.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
