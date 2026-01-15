@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 *.pyc
 __pycache__/
 .venv/
@@ -9,3 +10,24 @@ dist/
 # Documentation
 docs/build/
 docs/source/_build/
+=======
+.DS_Store
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+*~
+
+# Plan/documentation files
+implementation_plan.md
+
+# IDE
+.vscode/
+.idea/
+*.cif
+/.ipynb_checkpoints
+*.json
+node_modules/
+*.egg-info/
+>>>>>>> 4d590025ffa708ca40041e9b0dc8508fa2c41233

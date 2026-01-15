@@ -1,5 +1,6 @@
 # py2Dmol
 
+<<<<<<< HEAD
 [![Build status][github-actions-shield]][github-actions-link]
 [![Coverage status][coverage-shield]][coverage-link]
 [![Open in Colab][colab-shield]][colab-link]
@@ -306,3 +307,237 @@ viewer.add_pdb('simulation2.pdb', new_traj=True)
 [coverage-link]: https://codecov.io/gh/maraxen/py2Dmol
 [colab-shield]: https://colab.research.google.com/assets/colab-badge.svg
 [colab-link]: https://colab.research.google.com/github/maraxen/py2Dmol/blob/main/example/example.ipynb
+=======
+A Python library for visualizing protein, DNA, and RNA structures in 2D, designed for Google Colab and Jupyter.
+
+<img width="535" height="344" alt="image" src="https://github.com/user-attachments/assets/81fb0b9e-32a5-4fc7-ac28-921cf52f696e" />
+
+Bonus: [online interactive version](http://py2dmol.solab.org/)
+<a href="https://colab.research.google.com/github/sokrypton/py2Dmol/blob/main/py2Dmol_demo.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+## Installation
+```bash
+pip install py2Dmol
+```
+### latest experimental
+```bash
+pip install git+https://github.com/sokrypton/py2Dmol.git
+```
+
+## Quickstart: core workflow
+`py2Dmol` has two modes—decided by when you call `show()`:
+- **Static**: `add*()` then `show()` → one self-contained viewer.
+- **Live**: `show()` then `add*()` → stream frames/points as you go.
+
+### Load a PDB (static)
+```python
+import py2Dmol
+viewer = py2Dmol.view()
+viewer.add_pdb('6MRR')
+viewer.show()
+```
+
+### Load a PDB (live)
+#### cell #1
+```python
+import py2Dmol
+viewer = py2Dmol.view()
+viewer.show()
+```
+#### cell #2
+```python
+viewer.add_pdb('6MRR')
+```
+
+### Helpful loading shortcuts
+```python
+py2Dmol.view(autoplay=True).from_pdb('1YNE')                        # ensemble
+py2Dmol.view(rotate=True).from_pdb('1BJP', use_biounit=True)        # biounit
+py2Dmol.view().from_pdb('9D2J')                                     # multi-chain
+py2Dmol.view(pae=True).from_afdb('Q5VSL9')                          # AlphaFold + pAE
+```
+
+### Basic viewer options
+```python
+viewer = py2Dmol.view(
+    size=(300, 300), color='auto', colorblind=False,
+    shadow=True, outline='full', width=3.0, ortho=1.0,
+    rotate=False, autoplay=False, box=True, controls=True,
+)
+viewer.add_pdb("my_complex.cif")
+viewer.show()
+```
+
+## Layouts & multiple objects
+
+### Compare trajectories
+```python
+viewer = py2Dmol.view()
+viewer.add_pdb('simulation1.pdb', name="sim1")
+viewer.add_pdb('simulation2.pdb', name="sim2")  # creates a new object
+viewer.show()  # switch via dropdown
+```
+
+### Grid gallery
+```python
+with py2Dmol.grid(cols=2, size=(300, 300)) as g:
+    g.view().from_pdb('1YNE')
+    g.view().from_pdb('1BJP')
+    g.view().from_pdb('9D2J')
+    g.view().from_pdb('2BEG')
+```
+
+## Scatter plot
+Visualize per-frame 2D data (RMSD vs energy, PCA, etc.) synced to the trajectory. Scatter highlights the current frame and is clickable to jump frames.
+
+```python
+# Trajectory with scatter points
+viewer = py2Dmol.view(scatter=True, scatter_size=300)
+viewer.add_pdb(
+    "trajectory.pdb",
+    scatter=trajectory_scatter_points,  # list/array of [x, y] per frame (or path to CSV with x,y; first row used as labels if present)
+    scatter_config={"xlabel": "RMSD (Å)", "ylabel": "Energy (kcal/mol)", "xlim": [0, 10], "ylim": [-150, -90]},
+)
+viewer.show()
+```
+
+**CSV with trajectory**
+```python
+viewer = py2Dmol.view(scatter=True)
+viewer.add_pdb('trajectory.pdb', scatter='data.csv')  # header used to set axis labels
+viewer.show()
+```
+
+**Data sources**
+- Array/list: per-frame `scatter=[x, y]` (list/tuple/dict) or a 2-column array with one row per frame.
+- CSV file: two numeric columns; optional header row sets `xlabel`, `ylabel`. Example:
+  ```
+  RMSD,Energy
+  1.2,-150.3
+  1.4,-149.8
+  1.6,-149.1
+  ```
+
+# Advanced
+
+## Contact restraints
+Contacts are colored lines between residues; width follows weight.
+
+**File formats (`.cst`)**
+- `idx1 idx2 weight [color]` (0-based)
+- `chain1 res1 chain2 res2 weight [color]`
+
+**Data sources**
+- Array/list: list/array of `[idx1, idx2, weight]` or `[idx1, idx2, weight, {r,g,b}]` (0-based indices).
+- File: `.cst` text file, one contact per line (formats above).
+
+**Add contacts**
+```python
+viewer = py2Dmol.view()
+viewer.add_pdb('structure.pdb', contacts='contacts.cst')
+viewer.show()
+```
+
+## Colors
+Rendering uses a fixed 25% white mix to soften colors (DeepMind palette remains unlightened); there is no user-facing pastel/lightening setting.
+Five-level priority: Global (`view(color=...)`) < Object < Frame < Chain < Position.
+
+Semantic modes: `auto`, `chain`, `plddt`, `rainbow`, `entropy`, `deepmind`
+Literal: named, hex, or `{"r":255,"g":0,"b":0}`
+
+**How to target colors**
+- Position: `set_color("red", position=10)` or `position=(start, end)`
+- Chain: `set_color("red", chain="A")`
+- Frame: `add(..., color="rainbow")` on a single frame
+- Object: `set_color({"type": "mode", "value": "plddt"}, name="obj1")`
+- Global: `view(color="chain")`
+
+```python
+viewer = py2Dmol.view(color="plddt")
+viewer.add_pdb("protein.pdb")
+viewer.set_color("red", chain="A")
+viewer.set_color("yellow", position=(0, 20))
+viewer.set_color("red", chain="A", position=10, frame=0)
+viewer.show()
+```
+
+# Super Advanced
+
+## custom `add()` payloads
+Build mixed systems (protein/DNA/ligand) with explicit atom types.
+```python
+import numpy as np, py2Dmol
+def helix(n, radius=2.3, rise=1.5, rotation=100):
+    angles = np.radians(rotation) * np.arange(n)
+    return np.column_stack([radius*np.cos(angles), radius*np.sin(angles), rise*np.arange(n)])
+
+protein = helix(50); protein[:,0] += 15
+dna = helix(30, radius=10, rise=3.4, rotation=36); dna[:,0] -= 15
+angles = np.linspace(0, 2*np.pi, 6, endpoint=False)
+ligand = np.column_stack([1.4*np.cos(angles), 1.4*np.sin(angles), np.full(6, 40)])
+
+coords = np.vstack([protein, dna, ligand])
+plddts = np.concatenate([np.full(50, 90), np.full(30, 85), np.full(6, 70)])
+chains = ['A']*50 + ['B']*30 + ['L']*6
+types = ['P']*50 + ['D']*30 + ['L']*6
+
+viewer = py2Dmol.view((400,300), rotate=True)
+viewer.add(coords, plddts, chains, types)
+viewer.show()
+```
+
+## Live mode wiggle
+```python
+import numpy as np
+viewer = py2Dmol.view(autoplay=True)
+viewer.show()
+angles = np.linspace(0, 2 * np.pi, 20, endpoint=False)
+for frame in range(60):
+    coords = np.column_stack([
+        4 * np.sin(2 * angles + frame * 4 * np.pi/60),
+        12 * np.cos(angles + frame * np.pi/60),
+        12 * np.sin(angles + frame * np.pi/60)
+    ])
+    viewer.add(coords)
+```
+
+## Saving and loading
+Save or restore full viewer state (structures, settings, MSA, contacts, frame/object selection).
+```python
+viewer = py2Dmol.view(size=(600, 600), shadow=True)
+viewer.add_pdb('protein.pdb'); viewer.show()
+viewer.save_state('my_visualization.json')
+
+viewer2 = py2Dmol.view()
+viewer2.load_state('my_visualization.json')
+viewer2.show()
+```
+
+
+
+## Super Advanced
+
+### `replace()`
+
+
+```python
+viewer = py2Dmol.view()
+viewer.show()
+viewer.add(coords1)  # Cell #1
+viewer.add(coords2)  # Cell #2
+viewer.replace(coords3)  # Updates Cell #2, replaces last frame
+```
+
+### `persistence`
+
+Control output cell behavior with the `persistence` parameter:
+- `viewer.view(persistence=True)`: Default - Building trajectories, want visible history
+- `viewer.view(persistence=False)`: Animations, temporary viz, avoid notebook bloat
+
+## Reference
+**Atom codes**: Protein=P (CA), DNA=D (C4'), RNA=R (C4'), Ligand=L (heavy atoms)
+**Bond thresholds**: Protein CA-CA 5.0 Å; DNA/RNA C4'-C4' 7.5 Å; Ligand 2.0 Å
+**Color modes**: `auto`, `rainbow`, `plddt`, `chain`
+**Outline modes**: `none`, `partial`, `full` (default)
+**Formats**: PDB (.pdb), mmCIF (.cif); multi-model files load as frames.
+>>>>>>> 4d590025ffa708ca40041e9b0dc8508fa2c41233
