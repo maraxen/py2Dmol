@@ -181,6 +181,9 @@ scripts and the by-hand demonstrations; on anything else it is a question.
 | `play_stop.py` | ui | The play button has to survive being pressed WHILE IT IS PLAYING. |
 | `plddt_override.py` | tool | Colouring a few residues by hand must not recolour the whole structure. |
 | `plddt_panel.py` | ui | The confidence trace as a slot view: the tab, the picture, and the drag. |
+| `plugin_browser.py` | gpu | A plugin's wireframe in a REAL browser: both painters, capture, rotation, the key. |
+| `plugin_seam.js` | node | THE PLUGIN SEAM on the 2D painter: registry, render(), paint2d - no browser. |
+| `plugin_state.py` | node | Plugin payloads through the Python side: add, save_state, load_state, the page. |
 | `python_multi.py` | ui | WHAT PYTHON ASKS FOR, AND WHETHER THE PAGE DOES IT. |
 | `python_opacity.py` | gpu | set_opacity from Python: does it reach the picture, and survive a session? |
 | `python_page.py` | ui | The PYTHON api's own page, with two objects, checked in a real browser. |

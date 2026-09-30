@@ -76,7 +76,7 @@ if [[ "$LANE" == "all" || "$LANE" == "node" ]]; then
   # error, a missing file - prints a stack trace containing no such line, and
   # was reported as passing. tests/interaction.js died on startup for a whole
   # commit that way, and the suite said ALL GREEN.
-  for f in interaction smoke sequence copy_selection sidechain_chain covalent_links short_peptide na_frame align paint_trace cartoon_station station_faces math config msa_paired heatmap_resolve cyclic_partner cyclic_bench; do
+  for f in interaction smoke sequence copy_selection sidechain_chain covalent_links short_peptide na_frame align paint_trace cartoon_station station_faces math config msa_paired heatmap_resolve cyclic_partner cyclic_bench plugin_seam; do
     out=$(node tests/$f.js 2>&1); rc=$?
     if (( rc != 0 )); then
       fail=1; print "NODE $f: exit $rc"
@@ -141,6 +141,17 @@ if [[ "$LANE" == "all" || "$LANE" == "node" ]]; then
     print "node contacts_forms: ok"
   else
     fail=1; print "NODE contacts_forms:"; python3 tests/contacts_forms.py 2>&1 | grep -E '^FAIL|^  -' | head -3
+  fi
+
+  # ...and a plugin's payload survives the Python side - save_state, load_state, the
+  # page - including one this process has never heard of, and a viewer with NO plugin
+  # writes the same bytes it always did. No browser: the claim is in the text Python
+  # writes. (The byte-for-byte half needs a golden recorded from the pristine tree:
+  # `python3 tests/plugin_state.py --golden DIR`; without one it prints SKIP.)
+  if python3 tests/plugin_state.py >/dev/null 2>&1; then
+    print "node plugin_state: ok"
+  else
+    fail=1; print "NODE plugin_state:"; python3 tests/plugin_state.py 2>&1 | grep -E '^FAIL|^  -|Error' | head -3
   fi
 
   # ...and every probe in tests/ is named in tests/README.md, with the lane
@@ -252,6 +263,10 @@ probe_cap () {
     # probes that caused the congestion run in the serial lane instead - see
     # export_html, opacity and default_object there.
     (export_html) print 300 ;;
+    # six page loads (two painters x three registration orders) plus the two
+    # painters' baselines and a cube larger than the structure; the GPU ones
+    # are software-rendered where there is no card
+    (plugin_browser) print 600 ;;
     (default_object) print 300 ;;
     (opacity) print 200 ;;
     (python_opacity) print 200 ;;
@@ -323,7 +338,7 @@ if [[ "$LANE" == "all" || "$LANE" == "ui" ]]; then
 fi
 
 if [[ "$LANE" == "all" || "$LANE" == "gpu" ]]; then
-  for t in ss_every multi_step gpu_recolour gpu_mesh_reuse gpu_tube_reuse gpu_mixed_style gpu_stick_flat disulfides sequence_connectivity dev_rebuild_light colour_repaint station_shader station_corners station_pixels station_frames station_ligand station_foldcuts station_overlay station_sidechains topology_survey station_controls rebuild_actions rebuild_returns render_counts diffusion_connectivity pick_index halo_partial load_work station_unpinned panel_idle frame_share colour_cache ss_agree splice_window station_rows station_edges sheet_merge weld_open stick_topology outline_sync station_stick_faces panel_drag capture_once arrow_rebuilds ss_arrow_shape arrow_faces_2d ss_axis resize_reuse frame_revisit export_html opacity default_object python_opacity named_object gpu_direct; do
+  for t in ss_every multi_step gpu_recolour gpu_mesh_reuse gpu_tube_reuse gpu_mixed_style gpu_stick_flat disulfides sequence_connectivity dev_rebuild_light colour_repaint station_shader station_corners station_pixels station_frames station_ligand station_foldcuts station_overlay station_sidechains plugin_browser topology_survey station_controls rebuild_actions rebuild_returns render_counts diffusion_connectivity pick_index halo_partial load_work station_unpinned panel_idle frame_share colour_cache ss_agree splice_window station_rows station_edges sheet_merge weld_open stick_topology outline_sync station_stick_faces panel_drag capture_once arrow_rebuilds ss_arrow_shape arrow_faces_2d ss_axis resize_reuse frame_revisit export_html opacity default_object python_opacity named_object gpu_direct; do
     run_probe $t || fail=1
   done
   # ...and the same file again with a TAIL in it: 1EHZ's nine ions are rebuilt

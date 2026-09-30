@@ -6918,6 +6918,21 @@ const emitSlabInk = (Lp, Lm, Rp, Rm, oN, oB, oK, col, selFlag, gs0In,
     const zSpan = zMax - zMin;
     const nearOf = (z) => (zSpan > 1e-6 ? (z - zMin) / zSpan : 0.75);
 
+    // THE PLUGIN SEAM. After the depth range, so a plugin's geometry takes no
+    // part in the cartoon's depth shading (nearOf above is the structure's
+    // alone); before the backbone-hide and clip-slab filters, so the slab
+    // culls a plugin's prims by depth like everything else; before the sort
+    // and the _primProbe export, so the z-order is shared and the GPU path -
+    // which harvests the list through _probeOnly - sees them. One property
+    // read when no plugin is loaded. See parts/plugins.js.
+    if (typeof window !== 'undefined' && window.py2dmolPlugins
+        && window.py2dmolPlugins.collect) {
+        window.py2dmolPlugins.collect({
+            renderer, object, prims, project, scale, persp, fl, ctx,
+            displayWidth, displayHeight, light: LIGHT,
+        });
+    }
+
     const strokePath = (pts) => {
         ctx.beginPath();
         ctx.moveTo(pts[0][0], pts[0][1]);

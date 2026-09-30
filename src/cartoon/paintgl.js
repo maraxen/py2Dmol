@@ -615,7 +615,11 @@ function facesOf(prims, prm, consume) {
                 // disc's rim is drawn by the fragment shader, which is the only
                 // thing that knows where the circle actually is.
                 noInk: 1,
-                pal: p.ci !== undefined ? p.ci * 3 : (palComplete = false, -1),
+                // A PLUGIN'S BALL HAS NO PALETTE SLOT AND MUST NOT NEED ONE: its
+                // colour is its own and is baked, so recolouring the structure
+                // leaves it alone - and it must not flip palComplete, which would
+                // turn every recolour of the STRUCTURE into a rebuild.
+                pal: p.ci !== undefined ? p.ci * 3 : (p.plugin ? -1 : (palComplete = false, -1)),
                 colMode: 0, tan: [1, 0, 0] });
         } else if (p.kind === 'line' && p.pts && p.pts.length > 1) {
             // A FLAT STROKE - a contact, or a bond with no box. It is not a
@@ -637,8 +641,12 @@ function facesOf(prims, prm, consume) {
             //
             // wA went the same way, leaving the width to fall back to pixels
             // over the capture's scale - wrong under zoom.
+            // ...A PLUGIN'S STROKE is told apart: it carries no dark border when
+            // the plugin said noInk, and its extent counts towards the depth
+            // range (see buildMeshPart) - a contact's never did and must not.
             lines.push({ pts: p.pts, c: p.c || { r: 90, g: 90, b: 90 },
-                w: p.w || 1, wA: p.wA, zBias: p.zBias || 0, sel: !!p.sel });
+                w: p.w || 1, wA: p.wA, zBias: p.zBias || 0, sel: !!p.sel,
+                noInk: !!p.noInk, plugin: !!p.plugin });
         } else {
             skipped++;                            // tubes, dots, ribStrokes
             skipKinds[p.kind] = (skipKinds[p.kind] || 0) + 1;
@@ -3789,6 +3797,12 @@ function buildMeshPart(faces, scale, prm, lines, rowsUnused, smOffset) {
     // ribbon's silhouette. uScale already carries the zoom and the device
     // ratio, and pe is per vertex, so the shader needs neither.
     let hasContacts = false;
+    // THE FARTHEST A PLUGIN'S STROKE REACHES (squared, model space). A line is
+    // not a face, so the depth range below - sized from the faces' corners -
+    // knows nothing of it, and one that reaches past it is clipped in NDC
+    // depth: a shell larger than the structure loses its near and far sides.
+    // Plugin strokes only; a contact joins two residues and lies inside.
+    let lineRad2 = 0;
     const contactEdges = [];
     const dMx = currentCapCentre[0] - currentModelCenter[0];
     const dMy = currentCapCentre[1] - currentModelCenter[1];
@@ -3804,14 +3818,19 @@ function buildMeshPart(faces, scale, prm, lines, rowsUnused, smOffset) {
         const zb = ln.zBias || 0;
         const mp = ln.pts.map((q2) => {
             const v = apply(inv, unproject([q2[0], q2[1], q2[2] - zb], scale));
-            return [v[0] + dMx, v[1] + dMy, v[2] + dMz];
+            const pm = [v[0] + dMx, v[1] + dMy, v[2] + dMz];
+            if (ln.plugin) {
+                const d2 = pm[0] * pm[0] + pm[1] * pm[1] + pm[2] * pm[2];
+                if (d2 > lineRad2) lineRad2 = d2;
+            }
+            return pm;
         });
         // fall back to the pixel width over the CAPTURE scale if a build of the
         // renderer predates wA - wrong under zoom, but not wildly wrong
         const wA = ln.wA !== undefined ? ln.wA : (ln.w / Math.max(1e-6, scale));
         for (let i2 = 0; i2 + 1 < mp.length; i2++) {
             contactEdges.push({ p0: mp[i2], p1: mp[i2 + 1],
-                c: [ln.c.r, ln.c.g, ln.c.b], wA });
+                c: [ln.c.r, ln.c.g, ln.c.b], wA, noInk: !!ln.noInk });
         }
     }
     const wSigned = (fr, sgn) => (fr && fr.w
@@ -5242,7 +5261,7 @@ function buildMeshPart(faces, scale, prm, lines, rowsUnused, smOffset) {
             // shader reads as full coverage.
             ed[eo++] = -1;
         };
-        if (wantOutline) for (const c of contactEdges) putContact(c, 4, c.c, c.wA);
+        if (wantOutline) for (const c of contactEdges) if (!c.noInk) putContact(c, 4, c.c, c.wA);
         for (const c of contactEdges) putContact(c, 3, c.c, c.wA);
         // `continue` above leaves the tail of `ed` unwritten, so the instance count
         // is what was actually filled, not the map size
@@ -5284,6 +5303,11 @@ function buildMeshPart(faces, scale, prm, lines, rowsUnused, smOffset) {
         }
     }
     rad = Math.sqrt(rad);
+    // ...AND A PLUGIN'S STROKES, which have no faces to be counted among. This
+    // radius is what the depth range (resident.zMin/zMax, uZRange) is built
+    // from, and it reaches the ribbon's own shading too - see installParts and
+    // the station refresh, which carry it as the tail's radius.
+    if (lineRad2 > 0) rad = Math.max(rad, Math.sqrt(lineRad2));
     // DIAGNOSTICS ONLY, AND OFF BY DEFAULT. This held the entire face array -
     // every face's model-space corners, outward normal and interior flag - on
     // a global for the lifetime of the page, which is a rebuild's whole
@@ -5838,6 +5862,13 @@ function linesKeyOf(lines) {
     for (const ln of lines) {
         if (!ln) { mix(-1); continue; }
         mix(ln.w); mix(ln.wA); mix(ln.zBias);
+        // ...AND WHAT KIND OF STROKE IT IS. A plugin's stroke with and without its
+        // border is the same geometry and a different mesh part; without these the
+        // group-1 part cached under this hash is handed back across an `ink`
+        // toggle with the old rim in it. Mixed only when set, so a contact's key
+        // is what it always was.
+        if (ln.noInk) mix(1);
+        if (ln.plugin) mix(2);
         if (ln.c) { mix(ln.c.r); mix(ln.c.g); mix(ln.c.b); }
         const pts = ln.pts || [];
         mix(pts.length);
@@ -8599,6 +8630,15 @@ function sharedGeometryKey(r, topological) {
         // times its own stored weight, in Angstrom - so the width slider and
         // the colour swatch both need a rebuild to be seen.
         contactKeyOf(r),
+        // A PLUGIN'S GEOMETRY IS GEOMETRY OF THE MESH: its strokes and faces are
+        // built into it, so the registry states a KEY that moves whenever what
+        // its plugins would emit moves. Without this term a plugin that
+        // registers, changes an option or is handed a new payload never
+        // appears - the signature is the only thing that asks for a rebuild.
+        // Here rather than in signatureOf so the topological key carries it too.
+        // '' when no plugin is loaded, which leaves the signature as it was.
+        (typeof window !== 'undefined' && window.py2dmolPlugins
+            && window.py2dmolPlugins.key) ? window.py2dmolPlugins.key(r) : '',
         // 🔴 THE STRAND SET IS NOT IN HERE, and it was for an hour. The
         // outline's edge set is baked per strand face, so a residue that stops
         // being a strand keeps its creases until something rebuilds - and

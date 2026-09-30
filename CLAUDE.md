@@ -37,6 +37,7 @@ same list with load order and targets.
 | `parts/sidechains.js` | which residues show theirs — `showSidechains`/`hideSidechains`, the relative pair. Was written out in `parts/embed.js`, so only the embed's JS API could reach it. And what colour they are: `setSidechainColor`. |
 | `parts/shadow.js` | which segments darken which. |
 | `parts/align.js` | the renderer's side of TM-align; the transform lives on the object and is applied on the way out. |
+| `parts/plugins.js` | the plugin registry, `window.py2dmolPlugins`: `register`, the combined `key`, the seam's `collect`, the fit-to-view `extent`, the error state. **Not a viewer-mol part** - that queue seals at the first viewer and a plugin registers at any time. The contract and the evidence are `docs/PLUGINS.md`. |
 | `core/objstate.js` | `OBJECT_STATE` — every per-object field keyed by position index — plus the per-frame ligand cache. |
 | `core/svg.js` | `window.C2S`, the SVG export context. Optional. |
 
@@ -4754,6 +4755,51 @@ than leaving the next session to find out the same way.
   matched the phrase `static get ELEMENT_COLORS()` written in a *comment*;
   another matched `_extractSelection` when it wanted `extractSelection`. Prefer
   `tests/lift.js`, which finds a definition by shape.
+- 🔴 **A PLUGIN MUST NOT REGISTER THROUGH `py2dmolMolParts`.** That queue is
+  sealed by the first viewer and throws by name after it, and the notebook
+  PREPENDS scripts, so a plugin's order against the library is the reverse of
+  the order its reads appear in. `parts/plugins.js` is a plain object created if
+  absent on BOTH sides - a script that runs first parks its definition on
+  `window.py2dmolPlugins.pending`, and the bundle adopts the same object - and
+  `register()` after a viewer is up binds and redraws it. The same fact governs
+  what may be written into that file: a throw at load time kills the whole
+  bundle, so a bad plugin parked before it is recorded in `rejected` and never
+  thrown.
+- 🔴 **A PLUGIN'S EXTENT IS COUPLED TO THE GPU DEPTH RANGE, AND IT MOVES THE
+  CARTOON.** `resident.zMin/zMax` is `+-rad`, sized from the faces' corners, so a
+  stroke that reaches past it is clipped in NDC depth: a wireframe larger than
+  the structure lost its near and far sides (GPU 3,055 px against the 2D
+  painter's 6,308). `buildMeshPart` folds PLUGIN strokes into `rad` (`lineRad2`,
+  gated on `ln.plugin` - a contact lies inside its faces and must not start to
+  matter) and it propagates through `part.rad` to `tailRad`. The price, measured
+  on 1CRN: a stroke at 2.9x the structure's radius changes 610 cartoon pixels
+  (1.2% of the ink) on the GPU - tie-break speckle at coincident surfaces - and
+  none on the 2D painter; a stroke inside the radius costs nothing.
+  The plugin's radius floors the FITTED span only: a span orient, focus or the app
+  has set (`viewerState.extent`) is left alone - a floor over it stopped a focus on
+  one residue from zooming closer than a shell drawn around it - and the span an
+  orient-to-everything writes carries the floor itself (`parts/orient.js`), PER AXIS
+  (`floorViewSpan`): flooring the extent alone inflated the long axis of an elongated
+  structure 19x. `multi.js`'s reframes drop the floor until the next orient-to-all.
+  `tests/plugin_browser.py` fails if the fold is removed.
+- 🔴 **THE REGISTRY'S KEY HAS TO BE IN `sharedGeometryKey`.** The GPU rebuilds its
+  mesh only when the signature changes, and the plugin's prims are baked into
+  that mesh at build time - so a plugin that registers late, is handed a new
+  payload or has an option changed is invisible until the key moves. The
+  negative control proved it: with the term out, the wireframe stays on screen
+  after its option is switched off. It is in the shared key, not `signatureOf`,
+  so the topological (trajectory) key carries it too.
+- 🔴 **PLUGIN STATE IS THE VIEWER'S, AND A PLUGIN'S TRIANGLES AND BALLS ARE
+  RESIDUE 0'S TO HIDE.** `save_state` writes objects through a whitelist, so a
+  per-object `plugins` key is gone after `load_state` (`tests/plugin_state.py`
+  keeps that as a control) - the payload is `state["plugins"]`, written only when
+  non-empty so a viewer with none writes the bytes it always did. On the GPU a
+  plugin `tri` or `dot` is a face with a residue id that the fill shader clamps
+  into the visibility texture, so hiding residue 0 should hide them (read in the
+  shader, not measured); plugin lines are
+  edge instances with residue -1 and are immune. And the tube style never
+  reaches `geom.js`'s `render()`, so it draws no plugin at all (and now warns once
+  per viewer).
 
 ## Tests
 
