@@ -642,6 +642,11 @@
                     } finally {
                         this._exportPxScale = 1;
                     }
+                    // a plugin's legend (R5) is on the figure too, as the PNG is what
+                    // gets published; GIF and ZIP recordings do not carry it
+                    if (window.py2dmolPlugins && window.py2dmolPlugins.drawLegend) {
+                        window.py2dmolPlugins.drawLegend(this, octx, out.width, out.height, k);
+                    }
                     const objectName = this.currentObjectName;
                     out.toBlob((blob) => {
                         if (!blob) {
@@ -677,6 +682,9 @@
                 }
                 const svgCtx = new C2S(width, height);
                 this._renderToContext(svgCtx, width, height);
+                if (window.py2dmolPlugins && window.py2dmolPlugins.drawLegend) {
+                    window.py2dmolPlugins.drawLegend(this, svgCtx, width, height, 1);
+                }
                 const svgString = svgCtx.getSerializedSvg();
                 const objectName = this.currentObjectName;
 

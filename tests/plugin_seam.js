@@ -604,7 +604,9 @@ reset();
     delete global.window.py2dmolPlugins;
     const older = global.window.py2dmolPlugins = { list: [], pending: [], __impl: 1, register: sentinel };
     load(PLUGINS_JS);
-    ok(older.__impl === 2 && older.register !== sentinel && typeof older.collect === 'function',
+    // ...the revision this file declares, read off its own text
+    const IMPL_NOW = Number(/^const IMPL = (\d+);/m.exec(fs.readFileSync(path.join(ROOT, PLUGINS_JS), 'utf8'))[1]);
+    ok(older.__impl === IMPL_NOW && IMPL_NOW > 1 && older.register !== sentinel && typeof older.collect === 'function',
         'older-than-page: an OLDER registry (impl 1) IS taken over by this one');
     reset();
 }

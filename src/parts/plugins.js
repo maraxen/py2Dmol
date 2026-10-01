@@ -27,7 +27,7 @@
 const PLUGIN_API_VERSION = 1;
 
 // THIS FILE'S OWN REVISION, which is what makes a second evaluation a no-op.
-const IMPL = 2;
+const IMPL = 3;
 
 // HOW MANY PRIMITIVES A PLUGIN MAY EMIT PER FRAME, BY PAINTER. Chosen from a
 // measurement (docs/PLUGINS.md, "The budget"): the 2D painter strokes every prim on the
@@ -111,9 +111,9 @@ function viewerIdOf(r) {
 // they are different questions: the 2D and GPU painters have different caps and
 // a viewer is on one of them; an SVG export is always the 2D painter, however
 // the viewer is drawn; and `load` is init/setPayload/key/bounds, which no
-// painter asks. An export that overruns must not look like the viewer's own
-// failure - and never enters the GPU's cache key.
-const PAINTERS = ['2d', 'gpu', 'svg', 'load'];
+// painter asks; `ui` is rows() and legend(). An export that overruns must not
+// look like the viewer's own failure - and never enters the GPU's cache key.
+const PAINTERS = ['2d', 'gpu', 'svg', 'load', 'ui'];
 
 // The state a viewer carries for plugins. Built lazily on the first question,
 // from what Python put on the page (window.py2dmol_plugins[viewerId]) and from
@@ -122,7 +122,7 @@ function stateFor(r) {
     let st = states.get(r);
     if (st) return st;
     st = { r, id: viewerIdOf(r), entries: new Map(), logged: new Set(), badge: null,
-        extKey: null, ext: 0, err: { '2d': new Map(), gpu: new Map(), svg: new Map(), load: new Map() } };
+        extKey: null, ext: 0, err: { '2d': new Map(), gpu: new Map(), svg: new Map(), load: new Map(), ui: new Map() } };
     states.set(r, st);
     core.live.push(hasWeakRef ? new WeakRef(r) : r);
     const all = (typeof window !== 'undefined' && window.py2dmol_plugins && st.id)
@@ -185,6 +185,7 @@ function bindDef(st, def) {
     e.rev++;
     st.extKey = null;
     paintBadge(st);
+    P.refreshUI(st.r);
 }
 
 // ---------------------------------------------------------------- errors ---
@@ -215,7 +216,7 @@ function fail(st, e, err, painter) {
 function paintBadge(st) {
     if (typeof document === 'undefined') return;
     const msgs = [];
-    for (const p of ['2d', 'gpu', 'load']) for (const m of st.err[p].values()) msgs.push(m);
+    for (const p of ['2d', 'gpu', 'load', 'ui']) for (const m of st.err[p].values()) msgs.push(m);
     try {
         if (!msgs.length) {
             if (st.badge && st.badge.parentNode) st.badge.parentNode.removeChild(st.badge);
@@ -538,6 +539,7 @@ P.collect = function (g) {
             }
         }
     }
+    P.refreshUI(r);
     return added;
 };
 
@@ -593,6 +595,297 @@ P.extent = function (r, object) {
     return rad;
 };
 
+// ----------------------------------------------------------- rows, legend ---
+
+// R5: A PLUGIN'S STYLE-PANEL ROWS AND ITS LEGEND. rows(ctx) returns Style-panel rows
+// AS DATA - the schema of parts/panel.js's STYLE_PANEL_ROWS (a list of rows, each a list
+// of items) restricted to the three kinds a plugin can use: toggle, select, range - plus
+// `option`, the plugin option the control reads and writes (the panel calls
+// setOption(viewer, plugin, option, value)) and the CURRENT value in `checked` / `value`.
+// legend(ctx) returns [{label, color:'#rrggbb', note?, group?}]. Both are refused when
+// malformed, and a refusal is an error state (the `ui` painter), never a throw.
+const ROW_KINDS = { toggle: 1, select: 1, range: 1 };
+const MAX_ROWS = 100;
+const MAX_ITEMS = 8;
+const MAX_LEGEND = 1000;
+const MAX_TEXT = 300;
+const textOk = (s) => typeof s === 'string' && s.length > 0 && s.length <= MAX_TEXT;
+const num = (v) => typeof v === 'number' && Number.isFinite(v);
+
+P.validateRows = function (rows) {
+    if (!Array.isArray(rows)) return 'rows(): must return an array of rows, each an array of items';
+    if (rows.length > MAX_ROWS) return 'rows(): returned ' + rows.length + ' rows, the limit is ' + MAX_ROWS;
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        if (!Array.isArray(row) || !row.length) return 'rows(): row ' + i + ' must be a non-empty array of items';
+        if (row.length > MAX_ITEMS) return 'rows(): row ' + i + ' has ' + row.length + ' items, the limit is ' + MAX_ITEMS;
+        for (let j = 0; j < row.length; j++) {
+            const it = row[j];
+            const at = 'rows(): row ' + i + ' item ' + j;
+            if (!it || typeof it !== 'object') return at + ' is not an object';
+            if (!ROW_KINDS[it.kind]) {
+                return at + ': kind ' + JSON.stringify(it.kind) + ' is not one of toggle, select, range';
+            }
+            if (!textOk(it.option)) return at + ' needs a string `option` (the plugin option it sets, at most ' + MAX_TEXT + ' characters)';
+            if (!textOk(it.label)) return at + ' needs a string `label` (at most ' + MAX_TEXT + ' characters)';
+            if (it.title !== undefined && (typeof it.title !== 'string' || it.title.length > 2 * MAX_TEXT)) {
+                return at + ': `title` must be a short string';
+            }
+            if (it.kind === 'toggle' && typeof it.checked !== 'boolean') return at + ': a toggle needs a boolean `checked`';
+            if (it.kind === 'select') {
+                const o = it.options;
+                if (!Array.isArray(o) || !o.length || o.length > 200) return at + ': a select needs 1-200 `options`';
+                for (const x of o) {
+                    // exactly [value, text]: panel.js hands any third element to el(), which reads `html:` as markup
+                    if (!Array.isArray(x) || x.length !== 2 || typeof x[0] !== 'string' || typeof x[1] !== 'string') {
+                        return at + ': each select option must be [value, text], both strings';
+                    }
+                }
+                if (typeof it.value !== 'string') return at + ': a select needs a string `value`';
+            }
+            if (it.kind === 'range') {
+                if (!num(it.min) || !num(it.max) || !num(it.value) || !num(it.step) || !(it.step > 0)
+                    || it.min > it.max) {
+                    return at + ': a range needs finite min <= max, value and a step > 0';
+                }
+            }
+        }
+    }
+    return null;
+};
+
+P.validateLegend = function (entries) {
+    if (!Array.isArray(entries)) return 'legend(): must return an array of {label, color, note?, group?}';
+    if (entries.length > MAX_LEGEND) return 'legend(): returned ' + entries.length + ' entries, the limit is ' + MAX_LEGEND;
+    for (let i = 0; i < entries.length; i++) {
+        const x = entries[i];
+        const at = 'legend(): entry ' + i;
+        if (!x || typeof x !== 'object') return at + ' is not an object';
+        if (!textOk(x.label)) return at + ' needs a string `label` (at most ' + MAX_TEXT + ' characters)';
+        if (typeof x.color !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(x.color)) return at + ' needs a `color` written #rrggbb';
+        if (x.note !== undefined && (typeof x.note !== 'string' || x.note.length > MAX_TEXT)) return at + ': `note` must be a short string';
+        if (x.group !== undefined && x.group !== null && !textOk(x.group)) return at + ': `group` must be a short string';
+    }
+    return null;
+};
+
+// What every plugin that has rows() or legend() says RIGHT NOW. Called on every frame the
+// registry collects (2D) or harvests (GPU), so it is gated twice: only a plugin that
+// defines one of them is asked, and refreshUI compares the whole answer with the last one
+// before it touches the DOM.
+// `quiet` is an EXPORT's question (drawLegend): only the legend, asked for the painter that drew the export,
+// with no effect on the live viewer - no error state, no badge, no console.error. What went wrong comes back in
+// `problems` for the caller to say once, quietly.
+function computeUI(st, asPainter, quiet) {
+    const r = st.r;
+    const groups = [];
+    const legend = [];
+    const problems = [];
+    const painter = asPainter || (r.useGPU ? 'gpu' : '2d');
+    for (const e of st.entries.values()) {
+        if (!e.def) continue;
+        const wantRows = !quiet && typeof e.def.rows === 'function';
+        const wantLegend = typeof e.def.legend === 'function';
+        if (!wantRows && !wantLegend) continue;
+        let problem = null;
+        const ctx = Object.assign(ctxBase(st, e), { painter, maxPrims: capOf(painter) });
+        if (wantRows) {
+            try {
+                const rows = e.def.rows(ctx);
+                const bad = P.validateRows(rows);
+                if (bad) throw new Error(bad);
+                groups.push({ name: e.name, title: e.def.title || e.name, rows: JSON.parse(JSON.stringify(rows)) });
+            } catch (err) { problem = problem || err; }
+        }
+        if (wantLegend && optionsOf(e).legend !== false) {
+            try {
+                const ent = e.def.legend(ctx);
+                const bad = P.validateLegend(ent);
+                if (bad) throw new Error(bad);
+                for (const x of ent) {
+                    legend.push({ label: x.label, color: x.color.toLowerCase(),
+                        note: x.note || '', group: x.group || '' });
+                }
+            } catch (err) { problem = problem || err; }
+        }
+        if (quiet) { if (problem) problems.push(errMessage(e, problem)); continue; }
+        if (problem) fail(st, e, problem, 'ui');
+        else if (st.err.ui.delete(e.name)) paintBadge(st);
+    }
+    return { groups, legend, problems };
+}
+
+// THE LEGEND, ONE ELEMENT INSIDE THE VIEWER'S OWN BOX (the same rule as the error line): a
+// swatch and a label per entry, a heading where `group` changes. Text only - a label is
+// never parsed as markup. Absent when there is nothing to say.
+const LEGEND_DOM_MAX = 30;
+function paintLegend(st, entries) {
+    if (typeof document === 'undefined') return;
+    try {
+        const host = st.r.canvas && st.r.canvas.parentElement;
+        if (!entries.length || !host) {
+            if (st.legendEl && st.legendEl.parentNode) st.legendEl.parentNode.removeChild(st.legendEl);
+            st.legendEl = null;
+            return;
+        }
+        let box = st.legendEl;
+        if (!box) {
+            box = st.legendEl = document.createElement('div');
+            box.setAttribute('data-py2dmol-plugin-legend', '');
+            box.style.cssText = 'position:absolute;left:6px;top:6px;max-width:60%;padding:4px 7px;'
+                + 'font:11px/1.45 system-ui,-apple-system,sans-serif;color:#222;'
+                + 'background:rgba(255,255,255,0.88);border:1px solid #d0d0d0;border-radius:4px;'
+                + 'max-height:calc(100% - 12px);overflow:hidden;pointer-events:none;z-index:5';
+        }
+        if (box.parentNode !== host) host.appendChild(box);
+        box.textContent = '';
+        let group = null;
+        // A THOUSAND ENTRIES ARE NOT A THOUSAND LINES: the first LEGEND_DOM_MAX, then "+N more" (and the box is
+        // height-capped and clipped in any case, for a viewer too short for even those)
+        for (const x of entries.slice(0, LEGEND_DOM_MAX)) {
+            if (x.group && x.group !== group) {
+                const h = document.createElement('div');
+                h.style.cssText = 'font-weight:600;margin-top:3px';
+                h.textContent = x.group;
+                box.appendChild(h);
+            }
+            group = x.group;
+            const line = document.createElement('div');
+            line.style.cssText = 'display:flex;align-items:center';
+            const sw = document.createElement('span');
+            sw.setAttribute('data-swatch', '');
+            sw.style.cssText = 'display:inline-block;flex:none;width:10px;height:10px;margin-right:6px;'
+                + 'border:1px solid rgba(0,0,0,0.35);background:' + x.color;
+            line.appendChild(sw);
+            const label = document.createElement('span');
+            label.textContent = x.label;
+            line.appendChild(label);
+            if (x.note) {
+                const n = document.createElement('span');
+                n.style.cssText = 'margin-left:6px;opacity:0.65';
+                n.textContent = x.note;
+                line.appendChild(n);
+            }
+            box.appendChild(line);
+        }
+        if (entries.length > LEGEND_DOM_MAX) {
+            const more = document.createElement('div');
+            more.style.cssText = 'opacity:0.65;margin-top:2px';
+            more.textContent = '+' + (entries.length - LEGEND_DOM_MAX) + ' more';
+            box.appendChild(more);
+        }
+    } catch (err) { /* no DOM to draw it on: the plugin still draws */ }
+}
+
+// Ask every plugin that has rows() or legend() for its answer and bring the legend and the
+// Style panel up to date. Cheap when nothing moved (one JSON compare); called by the seam
+// every frame it collects and by every door that changes a plugin's state.
+P.refreshUI = function (r) {
+    const st = states.get(r) || (r && stateFor(r));
+    if (!st || !st.entries.size) return;
+    const ui = computeUI(st);
+    const sig = JSON.stringify(ui);
+    if (sig !== st.uiSig) {
+        st.uiSig = sig;
+        st.ui = ui;
+        paintLegend(st, ui.legend);
+    }
+    // ...the panel: a new panel starts empty, so one mounted after the first answer is
+    // handed it on the next call, and a viewer with no rows never calls it at all
+    const hook = r._syncPluginPanel;
+    if (typeof hook === 'function') {
+        if (hook !== st.sentTo) { st.sentTo = hook; st.sentSig = '[]'; }
+        const want = JSON.stringify(ui.groups);
+        if (want !== st.sentSig) {
+            st.sentSig = want;
+            try { hook(ui.groups); } catch (err) {
+                if (typeof console !== 'undefined') console.error('py2Dmol: plugin panel rows: ' + err);
+            }
+        }
+    }
+};
+
+// What a viewer's plugins show right now: {groups, legend}, for a test.
+P.uiState = function (r) {
+    const st = states.get(r);
+    return st && st.ui ? st.ui : { groups: [], legend: [] };
+};
+
+// THE LEGEND IN A STILL IMAGE. The DOM legend is on the screen only, so a PNG or SVG export
+// has it drawn into its own context by parts/capture.js: a backing box, then a swatch and a
+// label per entry. `k` is the export's pixel scale (dpi / 96; 1 for SVG). A GIF or ZIP
+// recording does not carry it. Cosmetic: a context that cannot draw text loses the legend
+// and nothing else.
+P.drawLegend = function (r, ctx, w, h, k) {
+    const st = states.get(r);
+    if (!st || !ctx) return;
+    k = k > 0 ? k : 1;
+    if (typeof ctx.fillText !== 'function') return;       // a legend of swatches with no words is worse than none
+    try {
+        const fs = 11 * k;
+        const rowH = 15 * k;
+        const pad = 6 * k;
+        const sw = 10 * k;
+        // WHAT THIS EXPORT DREW, asked for quietly. An SVG export is always the 2D painter, under the 2D cap. A
+        // PNG is whichever painter drew ITS frame: renderer.gpuDrewLastFrame is set by the export's own
+        // _drawFrame and capture.js calls this straight after it - false when the GPU declined (measured: at
+        // 1,500 dpi, 7,475 px, the 2D painter drew the PNG, under the 2D cap). The live viewer is untouched:
+        // the answer is computed into a local, an error draws no legend (said once on the console) and
+        // nothing depends on the live legend being non-empty.
+        const painter = (typeof ctx.getSerializedSvg === 'function') ? 'svg' : (r.gpuDrewLastFrame ? 'gpu' : '2d');
+        const asked = computeUI(st, painter, true);
+        if (asked.problems.length) {
+            note(st, 'legend-export:' + asked.problems[0], 'legend not drawn into a ' + painter + ' export: ' + asked.problems[0], 'warn');
+        }
+        const entries = asked.legend;
+        if (!entries.length) return;
+        let lines = [];
+        let group = null;
+        for (const x of entries) {
+            if (x.group && x.group !== group) lines.push({ head: x.group });
+            group = x.group;
+            lines.push(x);
+        }
+        // THE BOX STAYS INSIDE THE IMAGE: as many lines as fit, the last one "+N more"
+        const maxRows = Math.floor((h - 12 * k - 2 * pad + 4 * k) / rowH);
+        if (maxRows < 2) return;
+        if (lines.length > maxRows) {
+            lines = lines.slice(0, maxRows - 1);
+            const entriesKept = lines.filter((l) => !l.head).length;
+            lines.push({ head: '+' + (entries.length - entriesKept) + ' more' });
+        }
+        let width = 0;
+        for (const l of lines) {
+            const chars = l.head ? l.head.length : l.label.length + (l.note ? l.note.length + 2 : 0);
+            width = Math.max(width, (l.head ? 0 : sw + 6 * k) + chars * fs * 0.6);
+        }
+        width = Math.min(width, w - 12 * k - 2 * pad);
+        ctx.save();
+        const alpha0 = ctx.globalAlpha === undefined ? 1 : ctx.globalAlpha;
+        ctx.font = fs + 'px sans-serif';
+        // a translucent white box: globalAlpha, not an rgba() colour, so the SVG file
+        // carries an `opacity` attribute every editor reads
+        ctx.globalAlpha = 0.88;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(6 * k, 6 * k, width + 2 * pad, lines.length * rowH + 2 * pad - 4 * k);
+        ctx.globalAlpha = alpha0;
+        let y = 6 * k + pad;
+        for (const l of lines) {
+            if (l.head) {
+                ctx.fillStyle = '#222222';
+                ctx.fillText(l.head, 6 * k + pad, y + fs);
+            } else {
+                ctx.fillStyle = l.color;
+                ctx.fillRect(6 * k + pad, y + (rowH - sw) / 2 - 2 * k, sw, sw);
+                ctx.fillStyle = '#222222';
+                ctx.fillText(l.label + (l.note ? '  ' + l.note : ''), 6 * k + pad + sw + 6 * k, y + fs);
+            }
+            y += rowH;
+        }
+        ctx.restore();
+    } catch (err) { /* cosmetic */ }
+};
+
 // Errors currently showing on a viewer: [{name, message, painter}].
 P.errors = function (r) {
     const st = states.get(r);
@@ -632,6 +925,7 @@ P.setPayload = function (r, name, data) {
     st.extKey = null;
     const def = P.list.find((x) => x.name === name);
     if (def) bindDef(st, def);
+    P.refreshUI(r);
     try { r.render('plugin payload'); } catch (err) { /* a viewer mid-load */ }
 };
 P.setOption = function (r, name, key, value) {
@@ -641,6 +935,7 @@ P.setOption = function (r, name, key, value) {
     e.data.options[key] = value;
     e.rev++;
     st.extKey = null;
+    P.refreshUI(r);
     try { r.render('plugin option'); } catch (err) { /* a viewer mid-load */ }
 };
 })();

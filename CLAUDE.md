@@ -29,7 +29,7 @@ same list with load order and targets.
 | `parts/savepanel.js` | the Save panel's DOM. Built fresh on every open. |
 | `parts/clip.js` | the camera-space slab. |
 | `parts/orient.js` | the best-view search and the flight to it. Was 611 lines inside `src/app/main.js`; needs `src/io/math.js`. |
-| `parts/panel.js` | the Style panel's rows AND the Selection panel's, as data — `buildStylePanel` / `buildSelectionPanel` build the DOM. **One copy**, mounted by all three shells. The Style panel is skinned per page; the Selection panel carries its own stylesheet (`selectionPanelCSS`), because forty-six rules could not be written out three times. |
+| `parts/panel.js` | the Style panel's rows AND the Selection panel's, as data — `buildStylePanel` / `buildSelectionPanel` build the DOM. **One copy**, mounted by all three shells. The Style panel is skinned per page; the Selection panel carries its own stylesheet (`selectionPanelCSS`), because forty-six rules could not be written out three times. Also `syncPluginRows`: ONE labelled group of a plugin's rows (toggle / select / range only) as the last child of `#stylePanel`, absent - and the panel byte-identical - when no plugin has rows. |
 | `parts/selectpanel.js` | what the Selection panel DOES: colour, secondary structure, side chains, elements, bases, contacts, visibility, Find interactions, Align — plus the state readers it syncs from, and `wireSelectionPanel`. Was the web app's own file. Reaches its shell through `py2dmolSelectionHost({renderer, setStatus, afterChange})`. |
 | `parts/viewport.js` | `setupViewport` — find the canvas, size it for the display, keep it sized. The one thing both entry points share. |
 | `parts/slots.js` | the slots, NUMBERED FROM 1 - slot 1 where the structure was, slot 2 where the heatmap was - and which view is in which: the tabs over each, the swap, and the park a view goes to when none shows it. `renderer.setSlots`/`getSlots` on `core/mol.js` are its door, and they take a LIST. |
@@ -37,7 +37,7 @@ same list with load order and targets.
 | `parts/sidechains.js` | which residues show theirs — `showSidechains`/`hideSidechains`, the relative pair. Was written out in `parts/embed.js`, so only the embed's JS API could reach it. And what colour they are: `setSidechainColor`. |
 | `parts/shadow.js` | which segments darken which. |
 | `parts/align.js` | the renderer's side of TM-align; the transform lives on the object and is applied on the way out. |
-| `parts/plugins.js` | the plugin registry, `window.py2dmolPlugins`: `register`, the combined `key`, the seam's `collect`, the fit-to-view `extent`, the error state. **Not a viewer-mol part** - that queue seals at the first viewer and a plugin registers at any time. The contract and the evidence are `docs/PLUGINS.md`. |
+| `parts/plugins.js` | the plugin registry, `window.py2dmolPlugins`: `register`, the combined `key`, the seam's `collect`, the fit-to-view `extent`, the error state, and the plugin's rows and legend: `validateRows` / `validateLegend`, `refreshUI` (asks `rows()` / `legend()`, paints the legend element, hands the rows to `renderer._syncPluginPanel`) and `drawLegend` (into a PNG / SVG capture). **Not a viewer-mol part** - that queue seals at the first viewer and a plugin registers at any time. The contract and the evidence are `docs/PLUGINS.md`. |
 | `core/objstate.js` | `OBJECT_STATE` — every per-object field keyed by position index — plus the per-frame ligand cache. |
 | `core/svg.js` | `window.C2S`, the SVG export context. Optional. |
 
@@ -153,6 +153,8 @@ public downloads is exercised on every run.
 | file | owns |
 |---|---|
 | `py2Dmol/viewer.py` | the Python API and the generated HTML, which **inlines** its JavaScript. |
+| `tests/fakedom.js` | a DOM just big enough for the panel and the registry's own elements, so `plugin_rows.js` needs no browser. |
+| `tests/plugin_rows.js`, `tests/plugin_rows_browser.py` | a plugin's rows and legend: the schema, the panel byte-identical without plugins, the handler, in place vs rebuilt (fake DOM); then the real thing in the notebook (both painters), the web app and the embed. |
 | `tests/plugin_seam.js`, `tests/plugin_state.py`, `tests/plugin_browser.py` | plugins: the registry, the seam and the 2D painter with no browser; the payload through `save_state` / `load_state` / the page, and that a viewer with no plugin writes the same bytes; then the real thing, both painters, capture and the key. |
 | `tools/bundle.py` | **the manifest.** Every other file list is derived from it. |
 | `tools/free_vars.js` | what a line range reads but does not declare. |
@@ -4790,6 +4792,28 @@ than leaving the next session to find out the same way.
   texture, so hiding residue 0 should hide them (read in the shader, not measured); plugin lines are
   edge instances with residue -1 and are immune. The tube style never reaches `geom.js`'s `render()`,
   so it draws no plugin, and warns once per viewer.
+
+- 🔴 **A PLUGIN'S PANEL ROWS ARE DATA THE REGISTRY VALIDATES, AND A TOGGLE THAT IS OFF MUST NOT BE
+  WRITTEN AS `checked="false"`.** `el()` in `parts/panel.js` sets an attribute for every value that is
+  not `undefined`, and an attribute named `checked` is a checked box whatever it says: `buildItem` is
+  handed `checked: undefined` for off (`tests/plugin_rows.js` checks it). The group is ONE `div`
+  appended to `#stylePanel` only when a plugin has rows, so a viewer with none has the panel it always
+  had; values update in place and only a new SHAPE rebuilds, because rebuilding under a dragged slider
+  drops the drag. `syncStylePanel` un-hides every direct child of the panel, so the group must not
+  rely on `hidden`.
+- 🔴 **THE LEGEND IS DOM ON THE SCREEN AND DRAWN INTO A STILL IMAGE, AND AN EXPORT MUST NOT TOUCH THE
+  LIVE VIEWER'S STATE.** The DOM legend is not part of the canvas, so `P.drawLegend` draws it into the
+  PNG / SVG context from `parts/capture.js`; a GIF or ZIP recording carries none. It asks `legend()`
+  again, quietly, for the painter that drew the export - `'svg'` for an SVG (always the 2D painter,
+  under the 2D cap), `renderer.gpuDrewLastFrame` for a PNG, read straight after the export's own frame
+  because the GPU declines some frames and the 2D painter draws them - into a local value: no error
+  state, no badge, no console error on the live viewer. Its translucent box is `globalAlpha`, not an
+  `rgba()` colour: the SVG context's colour converter only knows `rgb()` and `#rrggbb`.
+- 🔴 **THE SVG CONTEXT HAS NO TEXT UNLESS YOU ADD IT, AND XML 1.0 REJECTS MORE THAN `<` AND `&`.**
+  `core/svg.js` is a minimal canvas2svg: a legend's words were silently absent from an SVG until it got
+  `fillText`. C0 controls (but tab, LF, CR), U+FFFE / U+FFFF and an unpaired surrogate make the whole
+  file unreadable, so `xmlSafe` removes them from every text the context writes, `<text>` and comments
+  alike; `tests/plugin_rows.js` parses the output with a real XML parser.
 
 ## Tests
 

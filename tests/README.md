@@ -84,7 +84,9 @@ read the SKIP. To record the golden once and compare with it:
 
 `tests/plugin_browser.py` runs on the default synthetic helix, and on a real structure with
 `PLUGIN_STRUCTURE=<file.pdb>`; outside the maintainer's Mac it needs `PY2DMOL_CHROME=<chrome binary>`.
-A bare pass count is therefore not comparable across machines.
+Likewise `tests/plugin_rows.js` prints one more PASS (the byte-for-byte panel comparison) with
+`PANEL_BASE=<tree without plugin rows>` than without it, where it prints a SKIP. A bare pass count is therefore not comparable
+across machines.
 
 ## Every probe, and which lane runs it
 
@@ -197,6 +199,8 @@ scripts and the by-hand demonstrations; on anything else it is a question.
 | `plddt_override.py` | tool | Colouring a few residues by hand must not recolour the whole structure. |
 | `plddt_panel.py` | ui | The confidence trace as a slot view: the tab, the picture, and the drag. |
 | `plugin_browser.py` | gpu | A plugin's wireframe in a REAL browser: both painters, capture, rotation, the key. |
+| `plugin_rows.js` | node | R5: A PLUGIN'S STYLE-PANEL ROWS AND ITS LEGEND - registry + panel.js, no browser. |
+| `plugin_rows_browser.py` | gpu | R5 in a REAL browser: a plugin's Style-panel rows and its legend, in all three shells. |
 | `plugin_seam.js` | node | THE PLUGIN SEAM on the 2D painter: registry, render(), paint2d - no browser. |
 | `plugin_state.py` | node | Plugin payloads through the Python side: add, save_state, load_state, the page. |
 | `python_multi.py` | ui | WHAT PYTHON ASKS FOR, AND WHETHER THE PAGE DOES IT. |

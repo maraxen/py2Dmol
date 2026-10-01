@@ -5,9 +5,10 @@ Python hands it. The renderer draws them with the cartoon, depth-sorted with it,
 PNG and SVG exports, and through `save_state` / `load_state`. This document is the contract and the
 evidence for it: what exists, what it promises, what it costs, and what was not checked.
 
-This change is the core: the registry, the seam in `cartoon/geom.js`, both painters' support, the
-Python API, the state round trip, the per-painter primitive budget and the fit-to-view floor. It
-ships no plugin of its own. Section 12 lists what is not here.
+The core is the registry, the seam in `cartoon/geom.js`, both painters' support, the Python API, the
+state round trip, the per-painter primitive budget and the fit-to-view floor. On top of it a plugin
+can add rows to the Style panel and a legend to the viewer and to exported figures (section 14). No
+plugin ships with py2Dmol itself. Section 12 lists what is not built.
 
 ## 1. Why
 
@@ -54,15 +55,13 @@ and it is not specific to density.
 
 ## 3. Requirements, and where each is met
 
-The numbering is the proposal's. The requirement between R4 and R6 (Style-panel rows and a legend) is
-a follow-up, see section 12.
-
 | | requirement | as built |
 |---|---|---|
 | R1 | a plugin contributes geometry both painters draw, depth-sorted with the cartoon, and captured | `collect()` at the seam in `geom.js`; `tests/plugin_seam.js` (2D, depth sort) and `tests/plugin_browser.py` (both painters, PNG and SVG capture) |
 | R2 | registration at any time; late registration must not throw | the registry is created if absent on both sides; a definition parked before the bundle is adopted by it; `register()` after a viewer is up binds and redraws it |
 | R3 | data from Python, in the page, through `save_state` / `load_state`; unknown plugins kept verbatim with a warning | viewer-level `state["plugins"]`; one warning per load naming every unknown name; `tests/plugin_state.py` |
 | R4 | zero change with no plugin | no-plugin `to_html()` and `save_state()` are byte-identical to before; the paint trace is unchanged (section 4) |
+| R5 | Style-panel rows and a legend, with no DOM outside the viewer | `rows(ctx)` and `legend(ctx)` in the definition, validated by the registry, mounted by `parts/panel.js` and `parts/ui.js`, drawn into PNG and SVG exports by `parts/capture.js` (section 14); `tests/plugin_rows.js`, `tests/plugin_rows_browser.py` |
 | R6 | `apiVersion` checked, with a message | `register()` compares with `PLUGIN_API_VERSION` (1) and refuses by name, with both versions and what to do; a missing `apiVersion` is refused too. **A refusal never throws**, wherever it happens (a direct call, or a definition parked before the bundle, where a throw would kill the whole bundle): it is recorded in `py2dmolPlugins.rejected`, said once on the console, and `register()` returns `null` |
 | R7 | geometry budgeted, refused loudly | `ctx.maxPrims` per painter; overrunning **throws** (section 7) |
 
@@ -76,6 +75,8 @@ a follow-up, see section 12.
   fixtures and 26,703 ops, checked against a baseline recorded with `--save` from the tree without it. An empty
   registry, a registry whose plugin the viewer has no payload for, and a plugin that emits nothing all
   draw byte-identically to no registry (`tests/plugin_seam.js`).
+- The Style panel of a viewer with no plugin rows is the panel `buildStylePanel` always built, byte for
+  byte, and no legend element exists (section 14; `tests/plugin_rows.js`).
 - The GPU signature gains one term, `window.py2dmolPlugins.key(r)`, which is `''` for a viewer with
   no plugin, so it is the signature it was.
 - What it does cost is bundle size: section 10.
@@ -239,7 +240,7 @@ right; that is why it throws. The message names the plugin, the cap, both painte
 do.
 
 **One cap and one error state per painter.** `errors()` entries carry `painter`: `'2d'`, `'gpu'`,
-`'svg'`, or `'load'` for `init` / `setPayload` / `key` / `bounds`. The GPU harvests geometry under
+`'svg'`, `'load'` for `init` / `setPayload` / `key` / `bounds`, or `'ui'` for `rows()` / `legend()`. The GPU harvests geometry under
 `_probeOnly`. An **SVG export is always the 2D painter** whatever painter the viewer has, so it is held
 to the **2D cap**: a 10,008-line shell the GPU draws is over it. An export cannot show a badge, so it
 says so **in the file**, as an XML comment `<!-- py2dmol plugin <name> not drawn: <message> -->`
@@ -307,21 +308,34 @@ written only when the viewer has any.
 ## 10. Costs
 
 Bundle sizes, built with `python3 tools/bundle.py build` (terser 5.51.2). The same toolchain rebuilds
-the tree before this change byte-identical to its committed bundles, so these deltas are this change only.
-Raw bytes, and `gzip -9 -n`:
+the tree before the plugin work byte-identical to its committed bundles, so these deltas are the plugin
+work only. Raw bytes, and `gzip -9 -n`.
+
+Rows and legend, on top of the core:
 
 | bundle | raw bytes | delta | gzip -9 bytes | delta |
 |---|---|---|---|---|
-| notebook | 654,099 -> 667,819 | +13,720 (+2.10%) | 208,526 -> 213,823 | +5,297 (+2.54%) |
-| web | 889,516 -> 903,236 | +13,720 (+1.54%) | 277,195 -> 282,486 | +5,291 (+1.91%) |
-| embed | 664,186 -> 677,388 | +13,202 (+1.99%) | 212,082 -> 216,967 | +4,885 (+2.30%) |
-| embed.cpu | 568,082 -> 581,479 | +13,397 (+2.36%) | 180,408 -> 185,380 | +4,972 (+2.76%) |
-| full | 907,579 -> 921,298 | +13,719 (+1.51%) | 283,452 -> 288,595 | +5,143 (+1.81%) |
+| notebook | 667,819 -> 677,128 | +9,309 (+1.39%) | 213,823 -> 216,700 | +2,877 (+1.35%) |
+| web | 903,236 -> 912,545 | +9,309 (+1.03%) | 282,486 -> 285,486 | +3,000 (+1.06%) |
+| embed | 677,388 -> 686,221 | +8,833 (+1.30%) | 216,967 -> 219,654 | +2,687 (+1.24%) |
+| embed.cpu | 581,479 -> 590,788 | +9,309 (+1.60%) | 185,380 -> 188,336 | +2,956 (+1.59%) |
+| full | 921,298 -> 930,607 | +9,309 (+1.01%) | 288,595 -> 291,566 | +2,971 (+1.03%) |
 
-The registry, the seam and the painter changes cost about 13.7 KB raw and about 5 KB gzipped per
-bundle. That is a cost in size, not a promise of "free when unused": the guarantee in section 4 is
+Everything, against the tree before the plugin work:
+
+| bundle | raw bytes | delta | gzip -9 bytes | delta |
+|---|---|---|---|---|
+| notebook | 654,099 -> 677,128 | +23,029 (+3.52%) | 208,526 -> 216,700 | +8,174 (+3.92%) |
+| web | 889,516 -> 912,545 | +23,029 (+2.59%) | 277,195 -> 285,486 | +8,291 (+2.99%) |
+| embed | 664,186 -> 686,221 | +22,035 (+3.32%) | 212,082 -> 219,654 | +7,572 (+3.57%) |
+| embed.cpu | 568,082 -> 590,788 | +22,706 (+4.00%) | 180,408 -> 188,336 | +7,928 (+4.39%) |
+| full | 907,579 -> 930,607 | +23,028 (+2.54%) | 283,452 -> 291,566 | +8,114 (+2.86%) |
+
+The registry, the seam and the painter changes are about 13.7 KB raw and 5 KB gzipped of that per bundle;
+rows and legend are about 9.3 KB raw and 3 KB gzipped (8.8 KB raw in the embed, which has no SVG
+context). That is a cost in size, not a promise of "free when unused": the guarantee in section 4 is
 about behaviour and output bytes. The notebook bundle is inlined into the `.ipynb` once per `show()`
-cell when the library is not shared, so the registry is paid there once per cell.
+cell when the library is not shared, so it is paid there once per cell.
 
 ## 11. What is not established
 
@@ -338,6 +352,12 @@ cell when the library is not shared, so the registry is paid there once per cell
 - **A notebook with the library borrowed over a BroadcastChannel** (Colab). The plugin script does not
   care whether it runs before the library; the three orders are tested in a page, not through a real
   borrow.
+- **GIF and ZIP recordings carry no legend** (section 14): a legend that is on the screen is in the
+  DOM only, not in the file.
+- **Which painter a PNG export's legend asks for** follows `renderer.gpuDrewLastFrame`, read straight
+  after the export's own frame. No test in the suite pins it; the one measurement of it is in section 14.
+- **The legend's position and size are fixed** (top left of the viewer's box, at most 30 entries, 60% of
+  the width): a viewer whose box is smaller than that clips it.
 - **GPU-browser coverage of `tri`, `dot` and `bounds`.** The browser probe draws lines and one ball;
   triangles and bounds are node-tested only.
 
@@ -345,7 +365,7 @@ cell when the library is not shared, so the registry is paid there once per cell
 
 | | needs |
 |---|---|
-| Style-panel rows and a legend for a plugin | `rows()` / `legend()` in the definition and a mount in `parts/panel.js`, touching no DOM outside the viewer |
+| a legend in GIF and ZIP recordings | the legend drawn into each recorded frame, as it is into a PNG |
 | `cover` / translucency | a real blend pass in `paintgl.js` |
 | a reserved visibility slot for `tri` / `dot` | one extra texel in the visibility texture that no residue owns, and `res` pointing at it |
 | a live update channel | `_send_incremental_update` carries `plugins` (a `None` removes: see the set/unset trap in `CLAUDE.md`); `add_plugin` on a live viewer |
@@ -370,4 +390,73 @@ Run the node checks with `tests/run.sh node`; the browser probes need Chromium (
 | `tests/plugin_seam.js` | node | registry, seam and `paint2d` without a browser: nothing changes without a plugin, colour and depth order reach the canvas, the prim schema, the `apiVersion` messages, registration in every order, the budget (exactly the cap passes, one over draws nothing), a throwing plugin rolls back, the key moves with options / payload / frame, `bounds` and the per-axis floor, `noInk`, `_modelToView` equals `_rotateAt` and applies `alignTransform`, non-finite and absurd coordinates, one cap per painter and the SVG comment, the tube notice, `linesKeyOf` |
 | `tests/plugin_state.py` | node | the round trip, unknown names kept and warned about once, a no-plugin page and state file byte-identical to the tree before this change (`--golden`), the page script and its escaping, per-page inlining, validation of every `add_plugin` argument |
 | `tests/plugin_browser.py` | gpu | a wireframe in both painters and in PNG / SVG capture, a rotation without a GPU rebuild, the key moving the picture through a rebuild, a cube larger than the structure not clipped, the ball keeping the structure's cheap recolour, three registration orders, the `ink` toggle, a tight fit on both axes, 10,008 strokes with an SVG export that carries the comment |
+| `tests/plugin_rows.js` | node | the schema and its refusals (a refusal is an error state, never a throw into the frame), the Style panel of a viewer with no rows byte-identical (against `PANEL_BASE=<tree without plugin rows>` as well), the handler calling `setOption`, values updated in place and only a new shape rebuilt, an off toggle not written as `checked="false"`, the legend element and its 30-entry cap, an export's legend leaving the live viewer's state alone, the SVG context's text and comments valid XML 1.0 (parsed with a real XML parser) |
+| `tests/plugin_rows_browser.py` | gpu | rows and legend in a real browser in all three shells (notebook with both painters, web app, embed): the panel byte-identical without rows, one labelled group, a click changing the drawing and the legend, the slider, the legend option, a PNG and an SVG capture carrying the legend once |
+| `tests/fakedom.js` | | a DOM just big enough for the panel and the registry's own elements, so `plugin_rows.js` needs no browser |
 | `tests/bundles.js` | node | every bundle carries `py2dmolPlugins` |
+
+## 14. Rows and legend (R5)
+
+A plugin may define `rows(ctx)` and `legend(ctx)`, and a `title` (the panel group's heading; default the
+plugin's name). Both get the usual `ctx` (`options`, `payloads`, `instance`, ...) plus `painter` and
+`maxPrims` for it, so a legend can say what the last frame on that painter drew.
+
+**`rows(ctx)`** returns Style-panel rows as data, in the schema of `parts/panel.js`'s
+`STYLE_PANEL_ROWS`: a list of rows, each a list of items, restricted to the kinds a plugin can use,
+`toggle`, `select` and `range`. Per item: `option` (the plugin option the control reads and writes; the
+panel calls `setOption(viewer, plugin, option, value)`), `label`, the current value in `checked` /
+`value`, and optionally `title` and `half`. A `select` has `options: [[value, text], ...]`, exactly two
+strings each, because a third element would reach `el()`, which reads `html:` as markup; a `range` has
+`min`, `max` and `step`. There is no `slot` (a plugin cannot own a div) and no `id` (the panel makes
+them). Limits: 100 rows, 8 items a row, 300 characters a label.
+
+**`legend(ctx)`** returns `[{label, color: '#rrggbb', note?, group?}]`, at most 1,000: a swatch and a
+label per entry and a heading where `group` changes. Text only: a label is never parsed as markup. The
+legend option `legend: false` takes a plugin's legend away.
+
+**Validation.** `P.validateRows` and `P.validateLegend` check the answers. A malformed answer, or one
+that throws, is an error state under the painter key `ui` (the badge, the console, `errors()`); the
+group and the legend draw nothing, and nothing is thrown into the frame loop. Both are asked again
+whenever the registry collects or harvests geometry and whenever `setOption`, `setPayload` or
+`register` runs; the whole answer is compared with the last one before the DOM is touched.
+
+**The Style panel.** The registry hands the validated groups to `renderer._syncPluginPanel`, which
+`parts/ui.js` sets beside the panel in every shell that builds one (notebook, web app, embed with
+`controls`). `parts/panel.js`'s `syncPluginRows` builds ONE labelled `div` as the last child of
+`#stylePanel`, and removes it when there is nothing to show. A viewer with no plugin rows never has the
+hook called, and its panel is the one `buildStylePanel` always built: `tests/plugin_rows.js` compares
+the markup (6,095 characters) with the same code with a rowless plugin registered, and with another
+tree's `panel.js` when `PANEL_BASE` names it; `tests/plugin_rows_browser.py` compares a live
+`#stylePanel` before and after a plugin it has no payload for registers, in all three shells. The group
+is rebuilt when its shape changes (rows, labels, options) and its controls are updated in place when
+only values change, because rebuilding under a slider being dragged drops the drag. A toggle that is off
+is built with `checked` undefined: `el()` sets an attribute for every defined value and an attribute
+named `checked` is a checked box whatever it says.
+
+**The legend on the screen** is one element inside the viewer's own box (`canvas.parentElement`, the same
+rule as the error line), `position:absolute` at the top left, absent when there are no entries. It shows
+the first 30 entries and then "+N more", and is height-capped and clipped to the box.
+
+**The legend in an exported figure.** The DOM legend is not part of the canvas, so a PNG or SVG capture
+draws the legend into its own context through `P.drawLegend` (called from `parts/capture.js` right after
+the render): a translucent box (`globalAlpha`, so the SVG carries an `opacity` attribute every editor
+reads), then a swatch and a label per entry, as many lines as fit and the last one "+N more". That
+needed `fillText` on the SVG context, which had none (`core/svg.js`, serialised as a `<text>` element); a
+context without `fillText` draws no legend rather than swatches with no words. GIF and ZIP recordings
+carry no legend.
+
+**An export's legend says what that export drew, and asking costs the live viewer nothing.**
+`drawLegend` asks `legend()` again, quietly, for the painter that drew the export: the answer is a local
+value, with no error state, no badge and no `console.error` on the live viewer, and nothing depends on
+the live legend being non-empty. A `legend()` that throws for one painter draws no legend into that
+export and says so once, as a console warning. The painter is `'svg'` for an SVG export, which is always
+the 2D painter under the 2D cap (so a GPU viewer's SVG can show fewer primitives than its screen); for a
+PNG it is `renderer.gpuDrewLastFrame`, read straight after the export's own frame. At ordinary dpi a GPU
+viewer's PNG reuses the GPU mesh and the screen's note is right; when the GPU declines a frame the 2D
+painter draws the PNG under the 2D cap, and the note follows that flag. Measured once, with a throwaway probe that is not in the suite (a GPU notebook viewer, 598 px, the default
+helix): at 96 and 192 dpi `gpuDrewLastFrame` was true and the export asked `legend()` for `'gpu'`; at
+1,500 dpi (7,475 px) it was false and the export asked for `'2d'`.
+
+**The SVG context's text is valid XML.** XML 1.0 forbids C0 controls (but tab, LF, CR), U+FFFE, U+FFFF and
+an unpaired surrogate, so the context removes them from every text it writes, the legend's `<text>`
+elements and the comments alike. `tests/plugin_rows.js` parses the result with a real XML parser.

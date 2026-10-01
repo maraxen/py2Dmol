@@ -738,6 +738,12 @@ renderer._syncStyleControls = () => {
 
 renderer._syncStylePanel = syncStylePanel;
 syncStylePanel();
+// ...AND A PLUGIN'S ROWS ride in the same panel (R5): the registry hands them to this hook
+// as data, panel.js builds them under a labelled group. A viewer with no plugin rows never
+// calls it, so its panel is the one buildStylePanel made.
+if (stylePanel && window.py2dmolPanel && window.py2dmolPanel.syncPluginRows) {
+    renderer._syncPluginPanel = (groups) => window.py2dmolPanel.syncPluginRows(renderer, stylePanel, groups);
+}
 
 // ---- Slider value readouts (calibration aid) --------------------------
 // Every range input gets a small bubble above its thumb naming the option
