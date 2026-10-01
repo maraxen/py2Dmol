@@ -33,7 +33,7 @@ END = "<!-- END INDEX -->"
 
 # The scaffolding, which is not a probe: a helper nobody runs on its own, and
 # the make_* fixtures, which are inputs.
-HELPERS = {"cdp", "probe_js", "draw_diff", "build", "index"}
+HELPERS = {"cdp", "probe_js", "draw_diff", "build", "index", "fakedom"}
 
 
 def lane_of(run, name):

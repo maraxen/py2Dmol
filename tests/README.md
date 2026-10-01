@@ -71,6 +71,23 @@ which file, in under a second.
 **Fixtures are as small as the question.** selection_panel measured a panel's
 row layout with 1YNE - 19,700 atoms - where 355D's 660 lay out identically.
 
+## Plugin probes: the counts that depend on how you run them
+
+`tests/plugin_state.py` prints **44 PASS and one SKIP** when run bare, and **47 PASS and no SKIP** with a
+golden: the R4 byte comparison (a no-plugin viewer's `to_html()` and `save_state()` identical to the
+PRISTINE tree's, and its control) only runs when it has the pristine bytes to compare with. Nothing stops
+running silently - the SKIP line says so. To get the 47: record the golden once from a tree that has no
+plugin work, then compare with it:
+
+    python3 tests/plugin_state.py --write-golden /tmp/golden     # in a PRISTINE checkout (before plugins)
+    python3 tests/plugin_state.py --golden /tmp/golden           # in the tree under test: 47 PASS, 0 SKIP
+
+Likewise `tests/plugin_rows.js` prints one more PASS (the byte-for-byte panel comparison) with
+`PANEL_BASE=<pristine tree>` than without it (where it prints a SKIP), `tests/volume_browser.py` runs the
+1CRN half only with `PLUGIN_1CRN=<1CRN.pdb>` (it prints SKIP otherwise) and `tests/volume_state.py`'s
+`meshes_from_grid` checks print SKIP without scikit-image. A bare count is therefore not comparable across
+machines: read the SKIP lines.
+
 ## Every probe, and which lane runs it
 
 Generated - `python3 tests/index.py --write` - and checked by the node lane, so
@@ -182,6 +199,8 @@ scripts and the by-hand demonstrations; on anything else it is a question.
 | `plddt_override.py` | tool | Colouring a few residues by hand must not recolour the whole structure. |
 | `plddt_panel.py` | ui | The confidence trace as a slot view: the tab, the picture, and the drag. |
 | `plugin_browser.py` | gpu | A plugin's wireframe in a REAL browser: both painters, capture, rotation, the key. |
+| `plugin_rows.js` | node | R5: A PLUGIN'S STYLE-PANEL ROWS AND ITS LEGEND - registry + panel.js, no browser. |
+| `plugin_rows_browser.py` | gpu | R5 in a REAL browser: a plugin's Style-panel rows and its legend, in all three shells. |
 | `plugin_seam.js` | node | THE PLUGIN SEAM on the 2D painter: registry, render(), paint2d - no browser. |
 | `plugin_state.py` | node | Plugin payloads through the Python side: add, save_state, load_state, the page. |
 | `python_multi.py` | ui | WHAT PYTHON ASKS FOR, AND WHETHER THE PAGE DOES IT. |
@@ -240,6 +259,9 @@ scripts and the by-hand demonstrations; on anything else it is a question.
 | `style_per_object.py` | ui | The style belongs to the object, and its settings belong to the style. |
 | `test_absolute_focus.py` | tool | ABSOLUTE FOCUS TEST: Compares renders before entering focus mode directly against |
 | `topology_survey.py` | gpu | WHICH CONTROLS ACTUALLY CHANGE THE MESH'S TOPOLOGY, and which only move it. |
+| `volume_browser.py` | gpu | The `volume` plugin in a REAL browser, on two structures, in both painters. |
+| `volume_plugin.js` | node | THE `volume` PLUGIN, in node: the shipped file (py2Dmol/resources/plugins/volume.js) run |
+| `volume_state.py` | node | The `volume` plugin through the Python side: add_volume, meshes_from_grid, state, the page. |
 | `weld_open.py` | gpu | A WELD ACROSS A COLLAPSED STATION MUST NOT OUTLIVE THE COLLAPSE. |
 
 <!-- END INDEX -->

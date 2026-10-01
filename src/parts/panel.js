@@ -240,6 +240,17 @@ function buildItem(item) {
     return half;
 }
 
+/** One row of items, as the `.toggle-item` div the skins dress. */
+function rowOf(items) {
+    const styles = new Set(items.map((i) => i.style || ''));
+    const row = el('div', {
+        class: 'toggle-item',
+        'data-style': styles.size === 1 ? [...styles][0] || null : null,
+    });
+    for (const item of items) row.appendChild(buildItem(item));
+    return row;
+}
+
 /**
  * The panel, as a detached `#stylePanel` element. Hidden; the Style button
  * opens it.
@@ -255,15 +266,7 @@ function buildStylePanel() {
     // the same question core/mol.js asks to derive useGPU, and the same one the
     // Save panel asks before offering SVG.
     const has2d = typeof window !== 'undefined' && !!window.py2dmolCartoonPaint;
-    const mkRow = (items) => {
-        const styles = new Set(items.map((i) => i.style || ''));
-        const row = el('div', {
-            class: 'toggle-item',
-            'data-style': styles.size === 1 ? [...styles][0] || null : null,
-        });
-        for (const item of items) row.appendChild(buildItem(item));
-        return row;
-    };
+    const mkRow = rowOf;
     // ...the advanced cells are pulled out of their rows as they are met, so
     // they keep the order the panel already had.
     const advRows = [];
@@ -328,6 +331,92 @@ function buildAdvanced(advRows, mkRow) {
         face.textContent = open ? 'Advanced \u25b4' : 'Advanced \u25be';
     });
     return { cell: sw, block };
+}
+
+// ============================================================================
+// A PLUGIN'S ROWS (docs/PLUGINS.md R5)
+// ----------------------------------------------------------------------------
+// A plugin's rows(ctx) answers in THIS file's schema - a list of rows, each a list of items -
+// restricted to the kinds toggle, select and range, plus `option` (the plugin option the
+// control sets) and the current value. The registry validates it and hands the groups
+// here through renderer._syncPluginPanel (wired in parts/ui.js beside the panel).
+//
+// ONE GROUP, A CHILD OF #stylePanel, LABELLED, AND ABSENT WHEN THERE IS NOTHING TO SHOW:
+// a viewer with no plugin rows builds the panel it always built, byte for byte
+// (tests/plugin_rows.js). The group is rebuilt when its SHAPE changes (rows, labels,
+// options) and its controls are UPDATED IN PLACE when only values change - rebuilding under
+// a slider being dragged would drop the drag.
+// ============================================================================
+function pluginControl(node, id) {
+    if (node.id === id) return node;
+    for (const c of node.children || []) {
+        const hit = pluginControl(c, id);
+        if (hit) return hit;
+    }
+    return null;
+}
+
+function setPluginControl(ctl, item) {
+    if (item.kind === 'toggle') ctl.checked = !!item.checked;
+    else ctl.value = String(item.value);
+}
+
+function syncPluginRows(renderer, panel, groups) {
+    let host = panel.__pluginHost || null;
+    if (!groups || !groups.length) {
+        if (host && host.parentNode) host.parentNode.removeChild(host);
+        panel.__pluginHost = null;
+        return;
+    }
+    const items = [];
+    for (const g of groups) for (const row of g.rows) for (const it of row) items.push({ g, it });
+    const shape = JSON.stringify(groups, (k, v) => (k === 'checked' || k === 'value' ? undefined : v));
+    if (host && host.__shape === shape) {
+        for (let i = 0; i < items.length; i++) setPluginControl(host.__controls[i], items[i].it);
+        return;
+    }
+    if (host && host.parentNode) host.parentNode.removeChild(host);
+    host = el('div', { 'data-py2dmol-plugin-rows': true });
+    host.style.cssText = 'display:flex;flex-direction:column;gap:inherit;margin-top:6px;'
+        + 'padding-top:6px;border-top:1px solid #e5e7eb';
+    const vid = String(renderer.viewerId || 'v').replace(/[^A-Za-z0-9_-]/g, '_');
+    const controls = [];
+    let n = 0;
+    groups.forEach((g, gi) => {
+        const box = el('div', { 'data-plugin': g.name });
+        box.style.cssText = 'display:flex;flex-direction:column;gap:inherit';
+        const head = el('div', { text: g.title });
+        head.style.cssText = 'font-size:11px;font-weight:600;opacity:0.75';
+        box.appendChild(head);
+        const made = [];
+        const rows = g.rows.map((row) => rowOf(row.map((it) => {
+            const id = 'pl-' + vid + '-' + gi + '-' + (n++);
+            made.push({ id, it });
+            const out = { kind: it.kind, id, label: it.label, title: it.title, half: it.half };
+            if (it.kind === 'toggle') out.checked = it.checked ? true : undefined;
+            else if (it.kind === 'select') out.options = it.options;
+            else Object.assign(out, { min: it.min, max: it.max, step: it.step, value: it.value });
+            return out;
+        })));
+        for (const r of rows) box.appendChild(r);
+        host.appendChild(box);
+        for (const m of made) {
+            const ctl = pluginControl(box, m.id);
+            setPluginControl(ctl, m.it);
+            ctl.addEventListener('change', () => {
+                const v = m.it.kind === 'toggle' ? !!ctl.checked
+                    : m.it.kind === 'range' ? Number(ctl.value) : ctl.value;
+                try { window.py2dmolPlugins.setOption(renderer, g.name, m.it.option, v); } catch (err) {
+                    if (typeof console !== 'undefined') console.error('py2Dmol: ' + err);
+                }
+            });
+            controls.push(ctl);
+        }
+    });
+    host.__shape = shape;
+    host.__controls = controls;
+    panel.appendChild(host);
+    panel.__pluginHost = host;
 }
 
 // ============================================================================
@@ -1309,7 +1398,7 @@ function buildSelectionPanel() {
     return panel;
 }
 
-window.py2dmolPanel = { buildStylePanel, STYLE_PANEL_ROWS,
+window.py2dmolPanel = { buildStylePanel, STYLE_PANEL_ROWS, syncPluginRows,
                         buildSelectionPanel, SELECTION_PANEL_ROWS,
                         SELECTION_ACTIONS,
                         selectionPanelCSS, installSelectionPanelCSS };

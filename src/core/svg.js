@@ -164,6 +164,12 @@ SimpleCanvas2SVG.prototype.clearRect = function () {
     // Ignore - we add white background in SVG
 };
 
+// XML 1.0 forbids C0 controls (but tab, LF, CR), U+FFFE / U+FFFF and an unpaired surrogate: one of them in a
+// label or in a message (a plugin's mesh id, say) would make the whole file unreadable, so they are dropped
+// from every text this context writes - the text elements AND the comments.
+const XML_BAD = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g;
+function xmlSafe(text) { return String(text).replace(XML_BAD, ''); }
+
 /**
  * A COMMENT IN THE FILE. An export that could not draw something - a plugin over
  * its budget - has no badge to show it on, so it says so in the text of the
@@ -171,7 +177,23 @@ SimpleCanvas2SVG.prototype.clearRect = function () {
  * nothing in one, but both are flattened so no message can make the file invalid.
  */
 SimpleCanvas2SVG.prototype.comment = function (text) {
-    this.operations.push({ type: 'comment', text: String(text).replace(/-{2,}/g, '-').replace(/[<>]/g, ' ') });
+    this.operations.push({ type: 'comment', text: xmlSafe(text).replace(/-{2,}/g, '-').replace(/[<>]/g, ' ') });
+};
+
+/**
+ * TEXT, for one thing: a plugin's legend in an exported figure (parts/plugins.js
+ * drawLegend). Nothing else the cartoon draws is text. `font` is read as
+ * "<n>px <family>"; the family is always sans-serif in the file.
+ */
+SimpleCanvas2SVG.prototype.fillText = function (text, x, y) {
+    const m = /(\d+(?:\.\d+)?)px/.exec(this.font || '');
+    this.operations.push({
+        // XML 1.0 forbids C0 controls (but tab, LF, CR), U+FFFE / U+FFFF and an unpaired surrogate:
+        // one of them in a label would make the whole file unreadable, so they are dropped
+        type: 'text', alpha: this.globalAlpha,
+        text: xmlSafe(text),
+        x: x, y: y, size: m ? m[1] : '11', fillStyle: this.fillStyle
+    });
 };
 
 // Stub methods (not used in rendering)
@@ -234,6 +256,12 @@ SimpleCanvas2SVG.prototype.getSerializedSvg = function () {
         const op = this.operations[i];
         if (op.type === 'comment') {
             body += '  <!-- ' + op.text + ' -->\n';
+        } else if (op.type === 'text') {
+            body += '  <text x="' + Math.round(op.x * 100) / 100 + '" y="' + Math.round(op.y * 100) / 100
+                + '" font-family="sans-serif" font-size="' + op.size + '" fill="'
+                + paintRef(op.fillStyle, gradDefs, gradIndex) + '"' + op_(op) + '>'
+                + op.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                + '</text>\n';
         } else if (op.type === 'rect') {
             body += '  <rect x="' + op.x + '" y="' + op.y + '" width="' + op.width
                 + '" height="' + op.height + '" fill="'

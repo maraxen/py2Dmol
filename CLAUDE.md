@@ -29,7 +29,7 @@ same list with load order and targets.
 | `parts/savepanel.js` | the Save panel's DOM. Built fresh on every open. |
 | `parts/clip.js` | the camera-space slab. |
 | `parts/orient.js` | the best-view search and the flight to it. Was 611 lines inside `src/app/main.js`; needs `src/io/math.js`. |
-| `parts/panel.js` | the Style panel's rows AND the Selection panel's, as data — `buildStylePanel` / `buildSelectionPanel` build the DOM. **One copy**, mounted by all three shells. The Style panel is skinned per page; the Selection panel carries its own stylesheet (`selectionPanelCSS`), because forty-six rules could not be written out three times. |
+| `parts/panel.js` | the Style panel's rows AND the Selection panel's, as data — `buildStylePanel` / `buildSelectionPanel` build the DOM. **One copy**, mounted by all three shells. The Style panel is skinned per page; the Selection panel carries its own stylesheet (`selectionPanelCSS`), because forty-six rules could not be written out three times. Also `syncPluginRows`: ONE labelled group of a plugin's rows (toggle / select / range only) as the last child of `#stylePanel`, absent - and the panel byte-identical - when no plugin has rows. |
 | `parts/selectpanel.js` | what the Selection panel DOES: colour, secondary structure, side chains, elements, bases, contacts, visibility, Find interactions, Align — plus the state readers it syncs from, and `wireSelectionPanel`. Was the web app's own file. Reaches its shell through `py2dmolSelectionHost({renderer, setStatus, afterChange})`. |
 | `parts/viewport.js` | `setupViewport` — find the canvas, size it for the display, keep it sized. The one thing both entry points share. |
 | `parts/slots.js` | the slots, NUMBERED FROM 1 - slot 1 where the structure was, slot 2 where the heatmap was - and which view is in which: the tabs over each, the swap, and the park a view goes to when none shows it. `renderer.setSlots`/`getSlots` on `core/mol.js` are its door, and they take a LIST. |
@@ -37,7 +37,8 @@ same list with load order and targets.
 | `parts/sidechains.js` | which residues show theirs — `showSidechains`/`hideSidechains`, the relative pair. Was written out in `parts/embed.js`, so only the embed's JS API could reach it. And what colour they are: `setSidechainColor`. |
 | `parts/shadow.js` | which segments darken which. |
 | `parts/align.js` | the renderer's side of TM-align; the transform lives on the object and is applied on the way out. |
-| `parts/plugins.js` | the plugin registry, `window.py2dmolPlugins`: `register`, the combined `key`, the seam's `collect`, the fit-to-view `extent`, the error state. **Not a viewer-mol part** - that queue seals at the first viewer and a plugin registers at any time. The contract and the evidence are `docs/PLUGINS.md`. |
+| `parts/plugins.js` | the plugin registry, `window.py2dmolPlugins`: `register`, the combined `key`, the seam's `collect`, the fit-to-view `extent`, the error state, and R5: `validateRows` / `validateLegend`, `refreshUI` (asks `rows()` / `legend()`, paints the legend element, hands the rows to `renderer._syncPluginPanel`) and `drawLegend` (into a PNG / SVG capture). **Not a viewer-mol part** - that queue seals at the first viewer and a plugin registers at any time. The contract and the evidence are `docs/PLUGINS.md`. |
+| `py2Dmol/resources/plugins/volume.js` | the `volume` plugin: isosurface meshes as wireframe or solid triangles. **Shipped as written, not built, and in NO bundle** - `viewer.py` reads it by path (`_BUILTIN_PLUGIN_FILES`) and inlines it once per viewer that has a volume payload. The one source file that does not live under `src/`. |
 | `core/objstate.js` | `OBJECT_STATE` — every per-object field keyed by position index — plus the per-frame ligand cache. |
 | `core/svg.js` | `window.C2S`, the SVG export context. Optional. |
 
@@ -153,6 +154,10 @@ public downloads is exercised on every run.
 | file | owns |
 |---|---|
 | `py2Dmol/viewer.py` | the Python API and the generated HTML, which **inlines** its JavaScript. |
+| `py2Dmol/volume.py` | the volume plugin's Python half: `validate_meshes` (what `view.add_volume` runs before it stores), `meshes_from_grid` (marching cubes; scikit-image imported only when called) and `palette`. numpy only at import. |
+| `tests/fakedom.js` | a DOM just big enough for the panel and the registry's own elements, so `plugin_rows.js` and `volume_plugin.js` need no browser. |
+| `tests/plugin_rows.js`, `tests/plugin_rows_browser.py` | R5: a plugin's rows and legend - the schema, the panel byte-identical without plugins, the handler, in place vs rebuilt (fake DOM); then the real thing in the notebook (both painters), the web app and the embed. |
+| `tests/volume_plugin.js`, `tests/volume_state.py`, `tests/volume_browser.py` | the volume plugin: payload validation, unique edges, the budget and its stride, `key()`; `add_volume` / `meshes_from_grid` / the state round trip; and both painters on two structures against a synthetic dG field. |
 | `tools/bundle.py` | **the manifest.** Every other file list is derived from it. |
 | `tools/free_vars.js` | what a line range reads but does not declare. |
 | `tools/extract_part.py` | cut a run of methods into a part file. |
@@ -4800,6 +4805,54 @@ than leaving the next session to find out the same way.
   edge instances with residue -1 and are immune. And the tube style never
   reaches `geom.js`'s `render()`, so it draws no plugin at all (and now warns once
   per viewer).
+- 🔴 **A PLUGIN'S PANEL ROWS ARE DATA THE REGISTRY VALIDATES, AND A TOGGLE THAT IS OFF
+  MUST NOT BE WRITTEN AS `checked="false"`.** `el()` in `parts/panel.js` sets an
+  attribute for every value that is not `undefined`, and an attribute named `checked`
+  is a checked box whatever it says - `buildItem` is handed `checked: undefined` for
+  off (`tests/plugin_rows.js` keeps that as a check). The group is ONE `div` appended
+  to `#stylePanel` only when a plugin has rows, so a viewer with none is byte-identical
+  to the panel before R5 (compared against the pristine tree's `panel.js`); values
+  update in place and only a new SHAPE rebuilds, because rebuilding under a dragged
+  slider drops the drag. `syncStylePanel` un-hides every direct child of the panel, so
+  the group must not rely on `hidden`.
+- 🔴 **THE LEGEND IS DOM ON THE SCREEN AND DRAWN INTO A STILL IMAGE, AND THE SVG CONTEXT
+  HAD NO TEXT.** `core/svg.js` is a minimal canvas2svg - no `fillText` - so the legend's
+  words were silently absent from an SVG until it grew one. `P.drawLegend` is called from
+  the PNG and SVG sinks in `parts/capture.js` only: a GIF or ZIP recording carries no
+  legend, and a context without `fillText` draws none rather than bare swatches. Its
+  translucent box is `globalAlpha`, not an `rgba()` colour - the SVG context's colour
+  converter only knows `rgb()` and `#rrggbb`.
+- 🔴 **THE VOLUME PLUGIN'S SUBSAMPLE IS A FIXED STRIDE, NEVER RANDOM, AND ITS BUDGET IS
+  0.9 OF THE PAINTER'S CAP.** `floor(j * n / k)` over the mesh's unique edges in order of
+  first appearance: the same input draws the same lines every frame (a random pick shimmers
+  and, on the GPU, would be a different mesh on every rebuild). A pick of "the first k"
+  would also be deterministic and would draw one end of the surface - `tests/volume_plugin.js`
+  asserts the stride's exact formula and that both poles of a sphere are reached. The 0.9
+  leaves the core's own cap error (`PluginBudgetError`) for plugins that overrun by mistake,
+  not for an ordinary payload.
+- 🔴 **THE REGISTRY'S KEY MOVES ON EVERY `setOption`, SO A PLUGIN'S OWN `key()` CAN BE WRONG AND
+  LOOK FINE ON THE GPU.** The registry folds a revision counter (`e.rev`, bumped by `setOption`,
+  `setPayload` and a bind) AND the options JSON into the key `sharedGeometryKey` carries. Measured:
+  with the volume plugin's visibility bits removed from its `key()` AND the options JSON removed from
+  the registry's, `tests/volume_browser.py` still passes - `rev` alone moves the key and the
+  GPU rebuilds. So a browser probe cannot catch a plugin's `key()` forgetting something; the
+  volume plugin's `key(ctx)` is tested ALONE in `tests/volume_plugin.js` (visibility, style,
+  budget, width, the payload's content hash - and NOT the legend option). It matters wherever what
+  a plugin draws changes without `setOption` / `setPayload`: a payload chosen by frame or object,
+  or state the plugin keeps itself.
+- 🔴 **scikit-image's `mask=` SKIPS A CUBE BY ONE CORNER, SO IT CANNOT CUT NaN OUT.** With the missing
+  data on the LOW side of an axis the cubes touching it were still meshed against the fill value and a
+  wall stayed (230 / 168 / 126 vertices off a sphere for NaN below the centre in x / y / z); only the
+  HIGH side came out clean, which is the only side the first tests cut. `meshes_from_grid` fills the
+  missing voxels (marching cubes cannot read NaN), meshes, then drops every face in a cell with a
+  non-finite corner (`_drop_faces_in_bad_cells`: a face lies in ONE cell, found from its vertices in
+  index space; a face exactly in a lattice plane belongs to both neighbours) and the orphaned
+  vertices. `tests/volume_state.py` cuts NaN on both sides of each axis, through the middle, for both
+  `inside` conventions and for a level wholly inside the NaN, and compares the survivors with the
+  NaN-free mesh. And the surface at a NEGATIVE
+  level encloses the voxels BELOW it (a dG well):
+  `inside="below"` picks scikit-image's `gradient_direction='descent'`, measured to wind
+  the triangles outward (positive signed volume) - the names read the other way round.
 
 ## Tests
 

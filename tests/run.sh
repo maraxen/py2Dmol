@@ -76,7 +76,7 @@ if [[ "$LANE" == "all" || "$LANE" == "node" ]]; then
   # error, a missing file - prints a stack trace containing no such line, and
   # was reported as passing. tests/interaction.js died on startup for a whole
   # commit that way, and the suite said ALL GREEN.
-  for f in interaction smoke sequence copy_selection sidechain_chain covalent_links short_peptide na_frame align paint_trace cartoon_station station_faces math config msa_paired heatmap_resolve cyclic_partner cyclic_bench plugin_seam; do
+  for f in interaction smoke sequence copy_selection sidechain_chain covalent_links short_peptide na_frame align paint_trace cartoon_station station_faces math config msa_paired heatmap_resolve cyclic_partner cyclic_bench plugin_seam plugin_rows volume_plugin; do
     out=$(node tests/$f.js 2>&1); rc=$?
     if (( rc != 0 )); then
       fail=1; print "NODE $f: exit $rc"
@@ -152,6 +152,16 @@ if [[ "$LANE" == "all" || "$LANE" == "node" ]]; then
     print "node plugin_state: ok"
   else
     fail=1; print "NODE plugin_state:"; python3 tests/plugin_state.py 2>&1 | grep -E '^FAIL|^  -|Error' | head -3
+  fi
+
+  # ...and the volume plugin's Python half: add_volume validates before it stores,
+  # meshes_from_grid (marching cubes, sign convention, NaN masking, lazy scikit-image
+  # import - its checks print SKIP, not a pass, where scikit-image is absent), and
+  # the plugin's JavaScript is a packaged resource that survives save_state/load_state.
+  if python3 tests/volume_state.py >/dev/null 2>&1; then
+    print "node volume_state: ok"
+  else
+    fail=1; print "NODE volume_state:"; python3 tests/volume_state.py 2>&1 | grep -E '^FAIL|^  -|Error' | head -3
   fi
 
   # ...and every probe in tests/ is named in tests/README.md, with the lane
@@ -267,6 +277,9 @@ probe_cap () {
     # painters' baselines and a cube larger than the structure; the GPU ones
     # are software-rendered where there is no card
     (plugin_browser) print 600 ;;
+    # the same page in three shells, two painters in the notebook; and two structures x two painters
+    (plugin_rows_browser) print 600 ;;
+    (volume_browser) print 900 ;;
     (default_object) print 300 ;;
     (opacity) print 200 ;;
     (python_opacity) print 200 ;;
@@ -338,7 +351,7 @@ if [[ "$LANE" == "all" || "$LANE" == "ui" ]]; then
 fi
 
 if [[ "$LANE" == "all" || "$LANE" == "gpu" ]]; then
-  for t in ss_every multi_step gpu_recolour gpu_mesh_reuse gpu_tube_reuse gpu_mixed_style gpu_stick_flat disulfides sequence_connectivity dev_rebuild_light colour_repaint station_shader station_corners station_pixels station_frames station_ligand station_foldcuts station_overlay station_sidechains plugin_browser topology_survey station_controls rebuild_actions rebuild_returns render_counts diffusion_connectivity pick_index halo_partial load_work station_unpinned panel_idle frame_share colour_cache ss_agree splice_window station_rows station_edges sheet_merge weld_open stick_topology outline_sync station_stick_faces panel_drag capture_once arrow_rebuilds ss_arrow_shape arrow_faces_2d ss_axis resize_reuse frame_revisit export_html opacity default_object python_opacity named_object gpu_direct; do
+  for t in ss_every multi_step gpu_recolour gpu_mesh_reuse gpu_tube_reuse gpu_mixed_style gpu_stick_flat disulfides sequence_connectivity dev_rebuild_light colour_repaint station_shader station_corners station_pixels station_frames station_ligand station_foldcuts station_overlay station_sidechains plugin_browser plugin_rows_browser volume_browser topology_survey station_controls rebuild_actions rebuild_returns render_counts diffusion_connectivity pick_index halo_partial load_work station_unpinned panel_idle frame_share colour_cache ss_agree splice_window station_rows station_edges sheet_merge weld_open stick_topology outline_sync station_stick_faces panel_drag capture_once arrow_rebuilds ss_arrow_shape arrow_faces_2d ss_axis resize_reuse frame_revisit export_html opacity default_object python_opacity named_object gpu_direct; do
     run_probe $t || fail=1
   done
   # ...and the same file again with a TAIL in it: 1EHZ's nine ions are rebuilt

@@ -5,3 +5,6 @@ __version__ = "2.0.0"
 
 from .viewer import view, register_plugin
 from .grid import Grid, grid, show_grid
+# the volume plugin's Python half: py2Dmol.volume.meshes_from_grid / validate_meshes / palette.
+# numpy only at import - scikit-image is imported when meshes_from_grid is CALLED.
+from . import volume
