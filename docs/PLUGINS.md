@@ -84,15 +84,25 @@ Run `python3 tools/bundle.py build` and quote the real numbers.
   3,109,613 notebook, 4,031,132 web, 3,135,308 embed, 2,698,476 embed.cpu and
   4,086,613 full bytes.
 
-*Estimated (assumptions, not measured):* the added code minifies to about 60-70% of
-its stripped size - **plugins.js about 10-11 KB minified, about 3.5-4.5 KB
-gzipped**, and everything changed **about 11-13 KB minified** (60-70% of the 19.0 KiB
-stripped delta), which is **about 1.7-2.0% of the 654 KB notebook bundle**. Over the
-wire the figure is an UPPER BOUND of **at most about 2.9%**: the gzipped stripped delta
-is 5.9 KiB (names unmangled) against the tracked notebook bundle's 208,550 B gzipped.
-Replace all of these with real numbers after `tools/bundle.py build`. The notebook
-bundle is inlined into the .ipynb once per `show()` cell when the library is not
-shared, so the registry is paid there once per cell.
+**Measured on the real build** (`tools/bundle.py build`, terser 5.51.2 via `bun x`;
+the same toolchain rebuilds the pristine tree byte-identical to the bundles committed
+on main, so these deltas are only this work). Bytes, before -> after, and gzip -9:
+
+| bundle | raw | delta | gzip -9 | delta |
+|---|---|---|---|---|
+| notebook | 654,099 -> 667,644 | +13,545 (+2.07%) | 208,360 -> 213,466 | +5,106 (+2.45%) |
+| web | 889,516 -> 903,061 | +13,545 (+1.52%) | 276,925 -> 282,179 | +5,254 (+1.90%) |
+| embed | 664,186 -> 677,388 | +13,202 (+1.99%) | 211,706 -> 216,712 | +5,006 (+2.36%) |
+| embed.cpu | 568,082 -> 581,304 | +13,222 (+2.33%) | 180,265 -> 185,205 | +4,940 (+2.74%) |
+| full | 907,579 -> 921,123 | +13,544 (+1.49%) | 283,236 -> 288,310 | +5,074 (+1.79%) |
+
+So the registry plus the seam and the painter changes cost about **13.5 KB raw, about
+5 KB gzipped** per bundle. This replaces the 1.7-2.0% estimate given before the build,
+which was a little low (the real raw cost on the notebook bundle is 2.07%). It is a
+measured cost, not "zero when unused": R4 holds for behaviour and output bytes (paint
+digests, `to_html`, `save_state`), not for bundle size. The notebook bundle is inlined
+into the .ipynb once per `show()` cell when the library is not shared, so the registry
+is paid there once per cell.
 
 ## 4. The API as built
 
