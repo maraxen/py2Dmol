@@ -256,11 +256,24 @@ import urllib.request
 # open a page with a plugin only as you would open one with any other script.
 
 # Plugins that ship inside py2Dmol itself, so load_state does not call their
-# payloads "unknown". None yet.
-_BUILTIN_PLUGINS = frozenset()
+# payloads "unknown" and a page needs no register_plugin call to draw them. Each is a
+# packaged resource read when a page is written - NOT part of any bundle, so a viewer
+# that never uses one pays nothing for it.
+_BUILTIN_PLUGIN_FILES = {'volume': 'plugins/volume.js'}
+_BUILTIN_PLUGINS = frozenset(_BUILTIN_PLUGIN_FILES)
 
 # name -> (JavaScript source, version), for plugins registered in THIS process.
 _PLUGIN_SOURCES = {}
+
+
+def _plugin_source(name):
+    """The JavaScript of plugin ``name``: the one registered in this process, else the one
+    that ships with py2Dmol, else None (a payload for a plugin nobody has registered)."""
+    if name in _PLUGIN_SOURCES:
+        return _PLUGIN_SOURCES[name][0]
+    if name in _BUILTIN_PLUGIN_FILES:
+        return _resource_text(_BUILTIN_PLUGIN_FILES[name])
+    return None
 
 _PLUGIN_NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.\-]{0,63}$')
 
@@ -2328,9 +2341,10 @@ window.py2dmol_configs['{viewer_id}'] = {json.dumps(self.config)};
         # register_plugin refused `</script` and `<!--`, so the source is
         # inlined verbatim.
         for _pname in self._plugins:
-            if _pname in _PLUGIN_SOURCES:
+            _psrc = _plugin_source(_pname)
+            if _psrc is not None:
                 container_html = ('<script data-py2dmol-plugin="' + _pname + '">'
-                                  + _PLUGIN_SOURCES[_pname][0] + '</script>\n'
+                                  + _psrc + '</script>\n'
                                   + container_html)
         # Only include library scripts if requested (grid optimization)
         if include_libs:
@@ -5077,6 +5091,68 @@ window.py2dmol_configs['{viewer_id}'] = {json.dumps(self.config)};
         p["payloads"].append({"object": object, "frame": frame, "payload": payload})
         p["options"].update(options)
         return self
+
+    def add_volume(self, meshes, name="volume", object=None, frame=None, style="wire",
+                   max_edges_per_mesh=None, legend=None):
+        """Draw isosurface shells: meshes as wireframe (default) or opaque solid triangles.
+
+        The ``volume`` plugin ships with py2Dmol - no ``register_plugin`` call, and a viewer
+        that never calls this carries none of its JavaScript. Build the meshes with
+        ``py2Dmol.volume.meshes_from_grid`` (marching cubes, needs scikit-image) or bring
+        your own; each is ``{"id", "label", "group", "level", "color": "#rrggbb",
+        "vertices": (N, 3) Angstrom, "faces": (M, 3)}`` (see ``py2Dmol.volume``).
+
+        Everything is checked HERE, before anything is stored. Like ``add_plugin`` the data
+        is viewer-level state, goes through ``save_state`` / ``load_state``, and is sent
+        with ``show()``.
+
+        The picture is budgeted: at most ``max_edges_per_mesh`` (default 10,000) edges per
+        mesh, and at most 90% of the painter's primitive cap in all (2D 8,000, GPU 60,000).
+        Over that, every n-th edge in a fixed order is drawn - SUBSAMPLING, not decimation
+        - and the legend says "shown N of M edges". Not supported: translucency, a global
+        opacity, per-vertex colour.
+
+        Args:
+            meshes: list of mesh dicts.
+            name (str): must be "volume" (one volume plugin per viewer; call again to add
+                meshes, ids must stay unique).
+            object (str, optional): bind to an object by name. None: whatever is drawn.
+            frame (int, optional): bind to a frame. None: every frame.
+            style (str): "wire" or "solid". Viewer-wide: the LAST call's value wins.
+            max_edges_per_mesh (int, optional): per-mesh cap (triangles in "solid").
+            legend (bool, optional): show the legend (default True in the page).
+
+        Returns:
+            view: self, so calls chain.
+        """
+        from . import volume as _volume
+        if name != "volume":
+            raise ValueError("add_volume: name must be 'volume' (one volume plugin per viewer; "
+                             "call add_volume again to add meshes), not %r" % (name,))
+        if style not in _volume.STYLES:
+            raise ValueError("add_volume: style must be one of %s, not %r" % (_volume.STYLES, style))
+        if max_edges_per_mesh is not None and (
+                isinstance(max_edges_per_mesh, bool) or not isinstance(max_edges_per_mesh, int)
+                or max_edges_per_mesh < 1):
+            raise ValueError("add_volume: max_edges_per_mesh must be an int >= 1 or None, not %r"
+                             % (max_edges_per_mesh,))
+        if legend is not None and not isinstance(legend, bool):
+            raise TypeError("add_volume: legend must be a bool or None, not %r" % (legend,))
+        clean = _volume.validate_meshes(meshes)
+        # ids name a visibility option, so they stay unique across calls
+        have = {m["id"] for p in self._plugins.get("volume", {}).get("payloads", [])
+                for m in p["payload"].get("meshes", [])}
+        dup = sorted(have & {m["id"] for m in clean})
+        if dup:
+            raise ValueError("add_volume: mesh id%s %s already added - ids must be unique across "
+                             "calls" % ("s" if len(dup) > 1 else "", ", ".join(repr(d) for d in dup[:5])))
+        options = {"style": style}
+        if max_edges_per_mesh is not None:
+            options["maxEdgesPerMesh"] = max_edges_per_mesh
+        if legend is not None:
+            options["legend"] = legend
+        return self.add_plugin("volume", {"meshes": clean}, object=object, frame=frame,
+                               options=options, version=_volume.VERSION, api_version=1)
 
     def set_plugin_option(self, name, key, value):
         """Set one option of plugin ``name`` (it must have a payload already)."""

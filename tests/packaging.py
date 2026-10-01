@@ -63,6 +63,12 @@ def opened_by_viewer():
         name = m.group(1)
         if name.endswith((".min.js", ".html")):
             out.setdefault(name, src[:m.start()].count("\n") + 1)
+    # ...AND THE PLUGINS THAT SHIP WITH THE PACKAGE (resources/plugins/*.js), which are read
+    # by a path and are not bundles. Without this the wheel could lose the volume plugin and
+    # this check would still pass - the failure is a FileNotFoundError on the first
+    # add_volume(), in the wheel only.
+    for m in re.finditer(r"""["'](plugins/[\w.-]+\.js)["']""", src):
+        out.setdefault(m.group(1), src[:m.start()].count("\n") + 1)
     return out
 
 

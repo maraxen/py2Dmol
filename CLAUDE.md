@@ -38,6 +38,7 @@ same list with load order and targets.
 | `parts/shadow.js` | which segments darken which. |
 | `parts/align.js` | the renderer's side of TM-align; the transform lives on the object and is applied on the way out. |
 | `parts/plugins.js` | the plugin registry, `window.py2dmolPlugins`: `register`, the combined `key`, the seam's `collect`, the fit-to-view `extent`, the error state, and the plugin's rows and legend: `validateRows` / `validateLegend`, `refreshUI` (asks `rows()` / `legend()`, paints the legend element, hands the rows to `renderer._syncPluginPanel`) and `drawLegend` (into a PNG / SVG capture). **Not a viewer-mol part** - that queue seals at the first viewer and a plugin registers at any time. The contract and the evidence are `docs/PLUGINS.md`. |
+| `py2Dmol/resources/plugins/volume.js` | the `volume` plugin: isosurface meshes as wireframe or solid triangles (`docs/PLUGIN_VOLUME.md`). **Shipped as written, not built, and in NO bundle** - `viewer.py` reads it by path (`_BUILTIN_PLUGIN_FILES`) and inlines it once per viewer that has a volume payload. The one source file that does not live under `src/`. |
 | `core/objstate.js` | `OBJECT_STATE` — every per-object field keyed by position index — plus the per-frame ligand cache. |
 | `core/svg.js` | `window.C2S`, the SVG export context. Optional. |
 
@@ -153,7 +154,9 @@ public downloads is exercised on every run.
 | file | owns |
 |---|---|
 | `py2Dmol/viewer.py` | the Python API and the generated HTML, which **inlines** its JavaScript. |
-| `tests/fakedom.js` | a DOM just big enough for the panel and the registry's own elements, so `plugin_rows.js` needs no browser. |
+| `py2Dmol/volume.py` | the volume plugin's Python half: `validate_meshes` (what `view.add_volume` runs before it stores), `meshes_from_grid` (marching cubes; scikit-image imported only when called) and `palette`. numpy only at import. |
+| `tests/fakedom.js` | a DOM just big enough for the panel and the registry's own elements, so `plugin_rows.js` and `volume_plugin.js` need no browser. |
+| `tests/volume_plugin.js`, `tests/volume_state.py`, `tests/volume_browser.py` | the volume plugin: payload validation, unique edges, the budget and its stride, `key()`; `add_volume` / `meshes_from_grid` / the state round trip; and both painters on two structures against a synthetic dG field. |
 | `tests/plugin_rows.js`, `tests/plugin_rows_browser.py` | a plugin's rows and legend: the schema, the panel byte-identical without plugins, the handler, in place vs rebuilt (fake DOM); then the real thing in the notebook (both painters), the web app and the embed. |
 | `tests/plugin_seam.js`, `tests/plugin_state.py`, `tests/plugin_browser.py` | plugins: the registry, the seam and the 2D painter with no browser; the payload through `save_state` / `load_state` / the page, and that a viewer with no plugin writes the same bytes; then the real thing, both painters, capture and the key. |
 | `tools/bundle.py` | **the manifest.** Every other file list is derived from it. |
@@ -4814,6 +4817,39 @@ than leaving the next session to find out the same way.
   `fillText`. C0 controls (but tab, LF, CR), U+FFFE / U+FFFF and an unpaired surrogate make the whole
   file unreadable, so `xmlSafe` removes them from every text the context writes, `<text>` and comments
   alike; `tests/plugin_rows.js` parses the output with a real XML parser.
+
+- 🔴 **THE VOLUME PLUGIN'S SUBSAMPLE IS A FIXED STRIDE, NEVER RANDOM, AND ITS BUDGET IS 0.9 OF THE
+  PAINTER'S CAP.** `floor(j * n / k)` over the mesh's unique edges in order of first appearance: the same
+  input draws the same lines every frame (a random pick shimmers and, on the GPU, would be a different
+  mesh on every rebuild). Taking "the first k" is deterministic too and draws one end of the surface:
+  `tests/volume_plugin.js` asserts the stride's exact formula and that both poles of a sphere are
+  reached. The 0.9 leaves the core's own cap error (`PluginBudgetError`) for plugins that overrun by
+  mistake, not for an ordinary payload.
+- 🔴 **THE REGISTRY'S KEY MOVES ON EVERY `setOption`, SO A PLUGIN'S OWN `key()` CAN BE WRONG AND LOOK FINE
+  ON THE GPU.** The registry folds a revision counter (`e.rev`, bumped by `setOption`, `setPayload` and a
+  bind) AND the options JSON into the key `sharedGeometryKey` carries. With the volume plugin's
+  visibility bits removed from its `key()` and the options JSON removed from the registry's,
+  `tests/volume_browser.py` still passes: `rev` alone moves the key and the GPU rebuilds. So a browser
+  probe cannot catch a plugin's `key()` forgetting something; the volume plugin's `key(ctx)` is tested
+  alone in `tests/volume_plugin.js` (visibility, style, budget, width, the payload's content hash, and
+  not the legend option). It matters wherever what a plugin draws changes without `setOption` /
+  `setPayload`: a payload chosen by frame or object, or state the plugin keeps itself.
+- 🔴 **scikit-image's `mask=` IS INDEXED BY A CUBE'S FAR CORNER, SO `~finite` CUTS THE WRONG CUBES.** Mask
+  False at voxel (x+1, y+1, z+1) skips the cube whose origin is (x, y, z). `~finite` therefore leaves a wall
+  where the data stops when the missing data is on the LOW side of an axis (scikit-image 0.26.0, a sphere
+  of radius 3, NaN below its centre: 221 / 173 / 133 vertices off the sphere for x / y / z; none for NaN
+  above it). `meshes_from_grid` passes the cell mask (a cube with any non-finite corner) shifted by one:
+  `keep[1:, 1:, 1:] = ~bad_cell`. Nothing is generated for those cubes and nothing is dropped, which is why
+  NaN voxels cost no more than finite ones (128^3 noise, 1% NaN: 433 MB and 2.6 s, against 2,268 MB and
+  17.7 s when everything was meshed and the faces dropped after). The indexing is a scikit-image
+  implementation detail, so `_far_corner_mask_ok()` probes it once per process; where it does not hold,
+  `_drop_faces_in_bad_cells` is the fallback (conservative about lattice-plane faces, and large). The
+  missing voxels are filled with a finite placeholder only because marching cubes cannot read NaN and
+  checks the level against the data's range. `tests/volume_state.py` holds the mask path to a brute force
+  (every all-finite cube meshed alone) and the fallback to vertex positions. And the surface at a NEGATIVE
+  level encloses the voxels BELOW it (a dG well): `inside="below"` picks scikit-image's
+  `gradient_direction='descent'`, which winds the triangles outward (positive signed volume) - the names
+  read the other way round.
 
 ## Tests
 

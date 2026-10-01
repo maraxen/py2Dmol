@@ -1,5 +1,6 @@
 // A DOM JUST BIG ENOUGH for the panel and the plugin registry's own elements -
-// no browser, no jsdom. Not a test: required by tests/plugin_rows.js.
+// no browser, no jsdom. Not a test: required by tests/plugin_rows.js and
+// tests/volume_plugin.js.
 //
 //     const D = require('./fakedom.js');
 //     global.document = D.document;

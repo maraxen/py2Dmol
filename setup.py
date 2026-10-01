@@ -50,6 +50,10 @@ setup(
             # them, and the omission only shows up in a release environment
             # where the setuptools-scm plugin is not there to cover for it.
             'resources/bundles/py2Dmol.notebook.min.js',
+            # ...and the plugins that ship with the package, read by path when a page is
+            # written (py2Dmol/viewer.py _BUILTIN_PLUGIN_FILES). Not in any bundle: a viewer
+            # that never calls add_volume carries none of it. tests/packaging.py checks it.
+            'resources/plugins/*.js',
         ],
     },
     license='BEER-WARE',

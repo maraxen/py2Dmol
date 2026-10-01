@@ -6,7 +6,7 @@
 
 tests/plugin_rows.js is the same claim against a fake DOM; this is the half that needs layout and
 pixels. The plugin here is a small test plugin (two wireframe cubes with rows() and legend()), so
-the core's hooks are measured on their own.
+the core's hooks are measured on their own; tests/volume_browser.py runs the real volume plugin.
 
 THE THREE SHELLS are the notebook (py2Dmol/resources/viewer.html, a page written by the Python API),
 the web app (index.html and the web bundle) and the embed (py2Dmol.show with controls). parts/panel.js

@@ -85,8 +85,10 @@ read the SKIP. To record the golden once and compare with it:
 `tests/plugin_browser.py` runs on the default synthetic helix, and on a real structure with
 `PLUGIN_STRUCTURE=<file.pdb>`; outside the maintainer's Mac it needs `PY2DMOL_CHROME=<chrome binary>`.
 Likewise `tests/plugin_rows.js` prints one more PASS (the byte-for-byte panel comparison) with
-`PANEL_BASE=<tree without plugin rows>` than without it, where it prints a SKIP. A bare pass count is therefore not comparable
-across machines.
+`PANEL_BASE=<tree without plugin rows>` than without it, where it prints a SKIP. `tests/volume_browser.py` runs its 1CRN half only with
+`PLUGIN_1CRN=<1CRN.pdb>` (it prints SKIP otherwise), and the `meshes_from_grid` checks of
+`tests/volume_state.py` print SKIP without scikit-image. A bare pass count is therefore not
+comparable across machines: read the SKIP lines.
 
 ## Every probe, and which lane runs it
 
@@ -259,6 +261,9 @@ scripts and the by-hand demonstrations; on anything else it is a question.
 | `style_per_object.py` | ui | The style belongs to the object, and its settings belong to the style. |
 | `test_absolute_focus.py` | tool | ABSOLUTE FOCUS TEST: Compares renders before entering focus mode directly against |
 | `topology_survey.py` | gpu | WHICH CONTROLS ACTUALLY CHANGE THE MESH'S TOPOLOGY, and which only move it. |
+| `volume_browser.py` | gpu | The `volume` plugin in a REAL browser, on two structures, in both painters. |
+| `volume_plugin.js` | node | THE `volume` PLUGIN, in node: the shipped file (py2Dmol/resources/plugins/volume.js) run |
+| `volume_state.py` | node | The `volume` plugin through the Python side: add_volume, meshes_from_grid, state, the page. |
 | `weld_open.py` | gpu | A WELD ACROSS A COLLAPSED STATION MUST NOT OUTLIVE THE COLLAPSE. |
 
 <!-- END INDEX -->

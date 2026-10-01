@@ -7,8 +7,9 @@ evidence for it: what exists, what it promises, what it costs, and what was not 
 
 The core is the registry, the seam in `cartoon/geom.js`, both painters' support, the Python API, the
 state round trip, the per-painter primitive budget and the fit-to-view floor. On top of it a plugin
-can add rows to the Style panel and a legend to the viewer and to exported figures (section 14). No
-plugin ships with py2Dmol itself. Section 12 lists what is not built.
+can add rows to the Style panel and a legend to the viewer and to exported figures (section 14). One
+plugin ships with py2Dmol, `volume`, which draws isosurface shells: `docs/PLUGIN_VOLUME.md`. Section 12
+lists what is not built.
 
 ## 1. Why
 
@@ -331,6 +332,9 @@ Everything, against the tree before the plugin work:
 | embed.cpu | 568,082 -> 590,788 | +22,706 (+4.00%) | 180,408 -> 188,336 | +7,928 (+4.39%) |
 | full | 907,579 -> 930,607 | +23,028 (+2.54%) | 283,452 -> 291,566 | +8,114 (+2.86%) |
 
+The `volume` plugin adds nothing to any bundle: it is a separate file, read by `viewer.py` and inlined
+only into a viewer that has a volume payload (`docs/PLUGIN_VOLUME.md`).
+
 The registry, the seam and the painter changes are about 13.7 KB raw and 5 KB gzipped of that per bundle;
 rows and legend are about 9.3 KB raw and 3 KB gzipped (8.8 KB raw in the embed, which has no SVG
 context). That is a cost in size, not a promise of "free when unused": the guarantee in section 4 is
@@ -365,6 +369,8 @@ cell when the library is not shared, so it is paid there once per cell.
 
 | | needs |
 |---|---|
+| `volume.js` minified at build time | it is inlined as written, 18,493 bytes per viewer that uses it, against 8,157 minified; a build step needs a manifest entry outside `src/` |
+| a tighter fit for a shell than the bounding-box radius | `bounds()` is a box and the registry turns it into a radius, which overshoots; a bounding sphere would be tighter |
 | a legend in GIF and ZIP recordings | the legend drawn into each recorded frame, as it is into a PNG |
 | `cover` / translucency | a real blend pass in `paintgl.js` |
 | a reserved visibility slot for `tri` / `dot` | one extra texel in the visibility texture that no residue owns, and `res` pointing at it |
@@ -393,6 +399,10 @@ Run the node checks with `tests/run.sh node`; the browser probes need Chromium (
 | `tests/plugin_rows.js` | node | the schema and its refusals (a refusal is an error state, never a throw into the frame), the Style panel of a viewer with no rows byte-identical (against `PANEL_BASE=<tree without plugin rows>` as well), the handler calling `setOption`, values updated in place and only a new shape rebuilt, an off toggle not written as `checked="false"`, the legend element and its 30-entry cap, an export's legend leaving the live viewer's state alone, the SVG context's text and comments valid XML 1.0 (parsed with a real XML parser) |
 | `tests/plugin_rows_browser.py` | gpu | rows and legend in a real browser in all three shells (notebook with both painters, web app, embed): the panel byte-identical without rows, one labelled group, a click changing the drawing and the legend, the slider, the legend option, a PNG and an SVG capture carrying the legend once |
 | `tests/fakedom.js` | | a DOM just big enough for the panel and the registry's own elements, so `plugin_rows.js` needs no browser |
+| `tests/volume_plugin.js` | node | the shipped `volume.js` run in node: payload validation, unique edges, the budget and its stride (the exact formula; both poles of a sphere reached), `key()` on its own, the fit, the error state, the same UTF-16 limit table as Python |
+| `tests/volume_state.py` | node | `add_volume` and `meshes_from_grid`: validation before anything is stored, the sign convention, NaN cut on every side, the state round trip, the page, the packaged resource |
+| `tests/volume_browser.py` | gpu | the real plugin in both painters on a helix and on 1CRN against a synthetic field: the shells appear, the budget note, the Edges slider, group toggles, an SVG export's legend |
+| `tests/packaging.py` | node | every file `viewer.py` opens, `plugins/*.js` included, is in `setup.py`'s package data |
 | `tests/bundles.js` | node | every bundle carries `py2dmolPlugins` |
 
 ## 14. Rows and legend (R5)
