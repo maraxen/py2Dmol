@@ -11783,29 +11783,61 @@ function initializePy2DmolViewer(containerElement, viewerId) {
             };
         }
 
+        /* ONE POINT INTO VIEW SPACE, written into `out` (anything with x, y, z:
+         * a Vec3 of rotatedCoords, or a scratch object). The whole of the
+         * arithmetic, once: the object's own rotation (best_view) about its
+         * centre, then the user's about the view centre. _rotateAt is this at a
+         * position and _modelToView is this for a point a plugin hands in -
+         * there is no third copy to drift.
+         */
+        _viewInto(x, y, z, R, out) {
+            // Step 1: Apply object-level rotation (best_view) if present
+            if (R.objectRotation && R.objectCenter) {
+                const oc = R.objectCenter; const orr = R.objectRotation;
+                const cx = x - oc[0];
+                const cy = y - oc[1];
+                const cz = z - oc[2];
+                const rotX = orr[0][0] * cx + orr[0][1] * cy + orr[0][2] * cz;
+                const rotY = orr[1][0] * cx + orr[1][1] * cy + orr[1][2] * cz;
+                const rotZ = orr[2][0] * cx + orr[2][1] * cy + orr[2][2] * cz;
+                x = rotX + oc[0]; y = rotY + oc[1]; z = rotZ + oc[2];
+            }
+            // Step 2: Apply user rotation
+            const c = R.c; const m = R.m;
+            const subX = x - c.x, subY = y - c.y, subZ = z - c.z;
+            out.x = m[0][0] * subX + m[0][1] * subY + m[0][2] * subZ;
+            out.y = m[1][0] * subX + m[1][1] * subY + m[1][2] * subZ;
+            out.z = m[2][0] * subX + m[2][1] * subY + m[2][2] * subZ;
+        }
+
         /* ONE POSITION INTO VIEW SPACE. Both rotation paths call this; there is
          * no second copy of the arithmetic to drift.
          */
         _rotateAt(i, R) {
-            let v = this.coords[i];
-            // Step 1: Apply object-level rotation (best_view) if present
-            if (R.objectRotation && R.objectCenter) {
-                const oc = R.objectCenter; const orr = R.objectRotation;
-                const cx = v.x - oc[0];
-                const cy = v.y - oc[1];
-                const cz = v.z - oc[2];
-                const rotX = orr[0][0] * cx + orr[0][1] * cy + orr[0][2] * cz;
-                const rotY = orr[1][0] * cx + orr[1][1] * cy + orr[1][2] * cz;
-                const rotZ = orr[2][0] * cx + orr[2][1] * cy + orr[2][2] * cz;
-                v = new Vec3(rotX + oc[0], rotY + oc[1], rotZ + oc[2]);
+            const v = this.coords[i];
+            this._viewInto(v.x, v.y, v.z, R, this.rotatedCoords[i]);
+        }
+
+        /* A MODEL-SPACE POINT INTO VIEW SPACE, THE WAY A POSITION GOES - for the
+         * plugins, whose geometry is in the coordinates of the file it came
+         * from. `xf` is the object's alignment, {t, u} as parts/align.js holds
+         * it: _resolvedFrame applies it to every coordinate on the way in, so a
+         * point that skips it lands where the file put the object and not where
+         * the picture shows it. Pass null for an object that has none. Returns
+         * a fresh [x, y, z] in Angstrom, about the view centre.
+         */
+        _modelToView(p, R, xf) {
+            let x = p[0]; let y = p[1]; let z = p[2];
+            if (xf) {
+                const t = xf.t; const u = xf.u;
+                const ax = t[0] + u[0] * x + u[1] * y + u[2] * z;
+                const ay = t[1] + u[3] * x + u[4] * y + u[5] * z;
+                const az = t[2] + u[6] * x + u[7] * y + u[8] * z;
+                x = ax; y = ay; z = az;
             }
-            // Step 2: Apply user rotation
-            const c = R.c; const m = R.m;
-            const subX = v.x - c.x, subY = v.y - c.y, subZ = v.z - c.z;
-            const out = this.rotatedCoords[i];
-            out.x = m[0][0] * subX + m[0][1] * subY + m[0][2] * subZ;
-            out.y = m[1][0] * subX + m[1][1] * subY + m[1][2] * subZ;
-            out.z = m[2][0] * subX + m[2][1] * subY + m[2][2] * subZ;
+            const out = { x: 0, y: 0, z: 0 };
+            this._viewInto(x, y, z, R, out);
+            return [out.x, out.y, out.z];
         }
 
         _growRotated() {
@@ -12506,8 +12538,28 @@ function initializePy2DmolViewer(containerElement, viewerId) {
                 ? framed.maxExtent : 30.0;
             const extent = this.viewerState.extent || maxExtent;
             const a = this.viewerState.extentAspect;
-            return halfSpanOf(extent, a, this.viewerState.zoom)
+            const half = halfSpanOf(extent, a, this.viewerState.zoom)
                 || { x: 1, y: 1 };
+            // A PLUGIN'S GEOMETRY JOINS THE FIT. The span is otherwise the
+            // structure's, and a shell drawn outside it would be cut off by the
+            // canvas edge. A radius about the view centre - the same at every
+            // rotation, so the picture does not zoom as it turns - and never a
+            // reason to zoom IN: the span only grows, and the reader's zoom still
+            // divides it. 0 for a viewer with no plugin, which leaves `half`
+            // exactly as it was. See parts/plugins.js.
+            //
+            // ...AND ONLY THE FIT. A span that orient, focus or the app has SET
+            // (viewerState.extent, written through setViewSpan) is a target, and
+            // flooring it at the plugin's radius would stop a focus on one
+            // residue from zooming closer than a shell drawn around it. Released
+            // (null: "orient to all", a fresh load) the plugin is framed again.
+            const P = (typeof window !== 'undefined') ? window.py2dmolPlugins : null;
+            const pr = (P && P.extent && !this.viewerState.extent) ? P.extent(this, object) : 0;
+            if (pr > 0) {
+                const z = this.viewerState.zoom > 0 ? this.viewerState.zoom : 1;
+                return { x: Math.max(half.x, pr / z), y: Math.max(half.y, pr / z) };
+            }
+            return half;
         }
 
         _viewportScale(displayWidth, displayHeight, object) {
@@ -12713,6 +12765,11 @@ function initializePy2DmolViewer(containerElement, viewerId) {
             // An auto slab follows its selection through a rotation; everything
             // below reads the planes, so it is brought up to date first.
             this._refreshAutoClip();
+            // A plugin payload in a style that draws no plugin says so, once.
+            if (this.style !== 'cartoon' && typeof window !== 'undefined'
+                && window.py2dmolPlugins && window.py2dmolPlugins.styleNotice) {
+                window.py2dmolPlugins.styleNotice(this);
+            }
             if (this.currentFrame < 0) {
                 // Clear canvas if no frame is set
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);

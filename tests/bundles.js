@@ -45,7 +45,11 @@ const EXPECT = {
     notebook: [
         ['initializePy2DmolViewer', 'OBJECT_STATE', 'normalizeConfig',
          'setupViewport', 'wireViewerUI', 'installMolParts',
-         'py2dmolCartoon', 'py2dmolCartoonGPU', 'py2dmolCartoonPaint', 'C2S'],
+         'py2dmolCartoon', 'py2dmolCartoonGPU', 'py2dmolCartoonPaint', 'C2S',
+         // ...and the plugin registry, which is in EVERY bundle: a plugin's
+         // JavaScript is inlined beside whichever bundle the page carries, and
+         // a bundle without the registry would drop it without a word
+         'py2dmolPlugins'],
         [],
     ],
     // ...the same embed on the CPU painter. Same names, opposite painters -
@@ -56,7 +60,7 @@ const EXPECT = {
         ['py2Dmol', 'wireEmbedUI', 'setupViewport', 'initializePy2DmolViewer',
          'parseCIF', 'parsePDB', 'convertParsedToFrameData',
          'py2dmolCartoon', 'py2dmolCartoonPaint', 'C2S',
-         'py2dmolPanel', 'wireViewerUI', 'Heatmap'],
+         'py2dmolPanel', 'wireViewerUI', 'Heatmap', 'py2dmolPlugins'],
         ['py2dmolCartoonGPU', 'Align', 'MSA', 'SEQ'],
     ],
     embed: [
@@ -72,7 +76,7 @@ const EXPECT = {
          // module the switch was honoured with silence. It draws nothing until
          // a host page provides #heatmapContainer, which is the same contract
          // every panel in this project has.
-         'Heatmap'],
+         'Heatmap', 'py2dmolPlugins'],
         // no 2D painter, no save UI, no side panels, no alignment
         ['py2dmolCartoonPaint', 'Align', 'MSA', 'SEQ'],
     ],
@@ -167,6 +171,27 @@ try {
     console.log('  web: parses (a browser runs it - tests/multi_object.py)');
 } catch (e) {
     bad(`${DIR}/py2Dmol.web.min.js does not parse: ${String(e.stderr || e).slice(0, 200)}`);
+}
+
+// ...and the two bundles that cannot be LOADED here (they touch `document` while they load) still
+// carry the plugin registry: a text check, because a name the page reads as a PROPERTY
+// (window.py2dmolPlugins) survives minification. `full` is parsed as well - it had no check at
+// all. Without this the registry could be dropped from either and only a browser would notice.
+for (const name of ['web', 'full']) {
+    const file = fileFor(name);
+    if (!fs.existsSync(file)) { bad(`${file} has not been built - run: python3 tools/bundle.py build`); continue; }
+    const text = fs.readFileSync(file, 'utf8');
+    if (!text.includes('py2dmolPlugins')) {
+        bad(`${name}.min.js does not carry the plugin registry (py2dmolPlugins) - parts/plugins.js is`
+            + ' missing from that bundle in tools/bundle.py');
+    }
+    if (name === 'full') {
+        try {
+            execFileSync('node', ['--check', file], { stdio: 'pipe' });
+        } catch (e) {
+            bad(`${file} does not parse: ${String(e.stderr || e).slice(0, 200)}`);
+        }
+    }
 }
 
 // --- and the sizes the documentation quotes ---------------------------------

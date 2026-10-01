@@ -244,6 +244,84 @@ import os
 import urllib.request
 
 
+# --- PLUGINS (docs/PLUGINS.md) ---------------------------------------------
+#
+# A plugin is JavaScript that draws things that are not residues, and a payload
+# Python hands it. The payload lives on the VIEWER (view._plugins), never on an
+# object: save_state writes objects through a whitelist, so a per-object key is
+# dropped on the way out - tests/plugin_state.py keeps that as a control.
+#
+# TRUST. A plugin's source is INLINE SCRIPT in the HTML the reader opens, which
+# is exactly what the core is. There is no sandbox and no sandbox is promised:
+# open a page with a plugin only as you would open one with any other script.
+
+# Plugins that ship inside py2Dmol itself, so load_state does not call their
+# payloads "unknown". None yet.
+_BUILTIN_PLUGINS = frozenset()
+
+# name -> (JavaScript source, version), for plugins registered in THIS process.
+_PLUGIN_SOURCES = {}
+
+_PLUGIN_NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.\-]{0,63}$')
+
+
+def _check_plugin_name(name):
+    if not isinstance(name, str) or not _PLUGIN_NAME.match(name):
+        raise ValueError(
+            "plugin name %r: use letters, digits, '.', '_' or '-' (at most 64,"
+            " starting with a letter or digit) - it becomes an HTML attribute"
+            " and a key in the state file" % (name,))
+    return name
+
+
+def register_plugin(name, js_source, version=None):
+    """Register an external plugin's JavaScript, to be inlined into every page
+    whose viewer carries a payload for ``name`` (see ``view.add_plugin``).
+
+    The source must register itself with ``window.py2dmolPlugins``, in a way
+    that works whether it runs before or after the viewer library (the
+    notebook loads them in either order)::
+
+        (function () {
+          var P = window.py2dmolPlugins = window.py2dmolPlugins || {list: [], pending: []};
+          var def = {name: "mine", version: "1", apiVersion: 1, prims: function (ctx) { ... }};
+          if (P.register) P.register(def); else P.pending.push(def);
+        })();
+
+    THE SOURCE IS INLINED INTO A ``<script>`` ELEMENT, so two sequences cannot
+    appear in it and are REFUSED with ValueError rather than escaped: escaping
+    ``</script`` or ``<!--`` is only safe inside a string, and this function
+    cannot know where in your code it is. Write ``"<\\/script>"`` or
+    ``"<" + "!--"`` if you need the text.
+
+    Trust model: plugin JavaScript is inline script in an HTML page the reader
+    opens, exactly like the core - there is no sandbox.
+
+    Args:
+        name (str): the plugin's name; the key payloads are stored under.
+        js_source (str): the JavaScript.
+        version (str, optional): recorded with the source, for your own use.
+    """
+    _check_plugin_name(name)
+    if not isinstance(js_source, str):
+        raise TypeError("register_plugin: js_source must be str, not %s"
+                        % type(js_source).__name__)
+    low = js_source.lower()
+    for bad in ('</script', '<!--'):
+        if bad in low:
+            raise ValueError(
+                "register_plugin(%r): the source contains %r, which would end or"
+                " confuse the <script> element it is inlined into. It cannot be"
+                " escaped safely without knowing where in the code it is - write"
+                " it so it does not appear literally (\"<\\/script>\","
+                " \"<\" + \"!--\")." % (name, bad))
+    _PLUGIN_SOURCES[name] = (js_source, version)
+
+
+def _known_plugin_names():
+    return set(_PLUGIN_SOURCES) | set(_BUILTIN_PLUGINS)
+
+
 # NO best_view HERE ANY MORE. It ran an SVD with numpy on every first frame and
 # shipped the resulting rotation in the payload, because the JavaScript side had
 # no SVD of its own without numeric.js - a CDN script pulled into every page for
@@ -1263,6 +1341,10 @@ class view:
         # comes back with the same side chains out.
         self._sidechains = []
         self._sent_sidechains = 0
+        # ...AND THE PLUGINS' PAYLOADS, keyed by plugin name. VIEWER-level, never
+        # on an object: see the note above register_plugin. {} for a viewer that
+        # uses none, and then nothing about plugins is written anywhere.
+        self._plugins = {}
         # ...AND WHETHER THE PAYLOAD CARRIES SIDE-CHAIN ATOMS. Read by
         # _parse_model, the only thing that can collect them, and a VIEWER-wide
         # setting rather than a per-load one: the table is per FRAME with no
@@ -2131,8 +2213,23 @@ window.py2dmol_configs['{viewer_id}'] = {json.dumps(self.config)};
           window.py2dmol_proteinData['{viewer_id}'] = {{ "coords": [], "plddts": [], "chains": [], "position_types": [], "pae": null }};
         </script>'''
 
+        # ...AND THE PLUGINS' PAYLOADS, a sibling of py2dmol_configs, read by the
+        # registry in src/parts/plugins.js. Written ONLY when the viewer has
+        # any: a viewer without a plugin emits the same bytes it always did.
+        # Every `<` is escaped (valid in a JSON string, and the only place one
+        # can be), so nothing in a payload can end or open anything in the
+        # script element it sits in.
+        plugin_script = ""
+        if self._plugins:
+            pj = json.dumps(self._plugins, separators=(',', ':')).replace('<', '\\u003c')
+            plugin_script = (
+                "<script>window.py2dmol_plugins = window.py2dmol_plugins || {};\n"
+                "window.py2dmol_plugins['" + viewer_id + "'] = " + pj + ";</script>")
+
         # Build injection scripts for config and data
         injection_scripts = config_script + "\n" + data_script
+        if plugin_script:
+            injection_scripts += "\n" + plugin_script
 
         # Inject config and data into the raw HTML template
         final_html = html_template.replace("<!-- DATA_INJECTION_POINT -->", injection_scripts)
@@ -2222,6 +2319,19 @@ window.py2dmol_configs['{viewer_id}'] = {json.dumps(self.config)};
             }})();
         </script>
         """ # Inject JS: always use inline package scripts (offline mode)
+        # ...AND THE PLUGINS' OWN JAVASCRIPT, one <script> for each plugin this
+        # viewer carries a payload for, in every bundle mode. It is written
+        # BEFORE the library below is prepended, so on the page it comes after
+        # an inline library and before nothing - and the borrowed library of a
+        # later notebook cell arrives after it. Either order works: see
+        # register_plugin for the boilerplate a plugin uses to not care.
+        # register_plugin refused `</script` and `<!--`, so the source is
+        # inlined verbatim.
+        for _pname in self._plugins:
+            if _pname in _PLUGIN_SOURCES:
+                container_html = ('<script data-py2dmol-plugin="' + _pname + '">'
+                                  + _PLUGIN_SOURCES[_pname][0] + '</script>\n'
+                                  + container_html)
         # Only include library scripts if requested (grid optimization)
         if include_libs:
             # ONE BUNDLE, NOT FIFTEEN SCRIPTS.
@@ -2339,6 +2449,7 @@ window.py2dmol_configs['{viewer_id}'] = {json.dumps(self.config)};
         self._position_residue_numbers = None
         self._position_elements = None
         self._sidechain_atoms = None
+        self._plugins = {}
         self._is_live = False
 
         # Reset incremental update tracking
@@ -4906,6 +5017,80 @@ window.py2dmol_configs['{viewer_id}'] = {json.dumps(self.config)};
         
         return redundant
 
+    def add_plugin(self, name, payload, object=None, frame=None, options=None,
+                   version=None, api_version=None):
+        """Give plugin ``name`` a JSON payload to draw from.
+
+        The plugin defines the payload's schema; py2Dmol only carries it - in
+        the generated page, and through ``save_state`` / ``load_state``, where
+        it is kept even by a process that has never heard of the plugin. It
+        lives on the VIEWER, not on an object, and is sent with ``show()`` (a
+        viewer already on the page does not see a later ``add_plugin`` until it
+        is shown again).
+
+        Args:
+            name (str): the plugin. Its JavaScript comes from ``register_plugin``
+                or ships with py2Dmol.
+            payload: anything ``json.dumps`` takes (no NaN, no sets).
+            object (str, optional): the object the payload belongs to, as
+                ``add_contacts`` binds. None: whatever is drawn.
+            frame (int, optional): the frame it belongs to. None: every frame.
+            options (dict, optional): plugin options, merged over earlier ones.
+            version (str, optional): the plugin version this payload was made for.
+            api_version (int, optional): the plugin API version it was made for.
+
+        Returns:
+            view: self, so calls chain.
+        """
+        _check_plugin_name(name)
+        # EVERY ARGUMENT IS CHECKED BEFORE ANYTHING IS STORED, so a refusal leaves
+        # no half-made entry behind. A bool is an int in Python and is not a frame.
+        if object is not None and not isinstance(object, str):
+            raise TypeError("add_plugin: object must be an object NAME (str) or None, not %r" % (object,))
+        if frame is not None and (isinstance(frame, bool) or not isinstance(frame, int)):
+            raise TypeError("add_plugin: frame must be an int or None, not %r" % (frame,))
+        if api_version is not None and (isinstance(api_version, bool) or not isinstance(api_version, int)):
+            raise TypeError("add_plugin: api_version must be an int or None, not %r" % (api_version,))
+        if version is not None and not isinstance(version, str):
+            raise TypeError("add_plugin: version must be a str or None, not %r" % (version,))
+        try:
+            # a COPY, through JSON: the caller may go on editing its own dict,
+            # and what is stored is exactly what will round-trip
+            payload = json.loads(json.dumps(payload, allow_nan=False))
+            options = json.loads(json.dumps(options or {}, allow_nan=False))
+        except ValueError as e:
+            raise ValueError("add_plugin(%r): the payload must be JSON (%s)" % (name, e)) from None
+        except TypeError as e:
+            raise TypeError("add_plugin(%r): the payload must be JSON (%s)" % (name, e)) from None
+        if self._is_live:
+            import warnings
+            warnings.warn(
+                "add_plugin(%r) on a viewer that is already on the page: plugin"
+                " payloads are sent with show(), so this one appears when the"
+                " viewer is shown again" % (name,), stacklevel=2)
+        p = self._plugins.setdefault(name, {
+            "version": version, "apiVersion": api_version, "options": {}, "payloads": []})
+        if version is not None:
+            p["version"] = version
+        if api_version is not None:
+            p["apiVersion"] = api_version
+        p["payloads"].append({"object": object, "frame": frame, "payload": payload})
+        p["options"].update(options)
+        return self
+
+    def set_plugin_option(self, name, key, value):
+        """Set one option of plugin ``name`` (it must have a payload already)."""
+        if name not in self._plugins:
+            raise KeyError("no payload for plugin %r has been added - call"
+                           " add_plugin first" % (name,))
+        try:
+            value = json.loads(json.dumps(value, allow_nan=False))
+        except (TypeError, ValueError) as e:
+            raise type(e)("set_plugin_option(%r, %r): the value must be JSON (%s)"
+                          % (name, key, e)) from None
+        self._plugins[name]["options"][key] = value
+        return self
+
     def save_state(self, filepath):
         """
         Saves the current viewer state (objects, frames, viewer settings, selection) to a JSON file.
@@ -5029,7 +5214,11 @@ window.py2dmol_configs['{viewer_id}'] = {json.dumps(self.config)};
             "current_object": self.objects[-1]["name"] if self.objects else None,
             "viewer_state": viewer_state,
         }
-        
+        # PLUGIN PAYLOADS, viewer level, and ONLY when there are any, so a state
+        # file from a viewer with none is byte-identical to what it was.
+        if self._plugins:
+            state_data["plugins"] = copy.deepcopy(self._plugins)
+
         # Write to file
         with open(filepath, 'w') as f:
             json.dump(state_data, f, indent=2)
@@ -5186,6 +5375,29 @@ window.py2dmol_configs['{viewer_id}'] = {json.dumps(self.config)};
             if vs.get("colorblind_mode") is not None:
                 color_cfg["colorblind"] = vs["colorblind_mode"]
         
+        # PLUGIN PAYLOADS come back VERBATIM, whether or not this process knows the
+        # plugin: a state file is a document, and loading it in a session that
+        # lacks a plugin must not quietly destroy that plugin's data. One warning
+        # for the unknown ones, naming them.
+        self._plugins = {}
+        plugs = state_data.get("plugins")
+        if isinstance(plugs, dict):
+            for pname, pdata in plugs.items():
+                self._plugins[pname] = copy.deepcopy(pdata)
+            unknown = sorted(n for n in self._plugins if n not in _known_plugin_names())
+            if unknown:
+                import warnings
+                warnings.warn(
+                    "state file carries payloads for plugin%s %s, which %s not"
+                    " registered in this process (py2Dmol.register_plugin); %s kept"
+                    " as-is and written back by save_state(), but nothing will draw"
+                    " them until the plugin is registered" % (
+                        "s" if len(unknown) > 1 else "",
+                        ", ".join(repr(n) for n in unknown),
+                        "are" if len(unknown) > 1 else "is",
+                        "they are" if len(unknown) > 1 else "it is"),
+                    stacklevel=2)
+
         # State loaded - user must call show() to display
         if not self.objects:
             print("Warning: No objects loaded from state file.")

@@ -71,6 +71,21 @@ which file, in under a second.
 **Fixtures are as small as the question.** selection_panel measured a panel's
 row layout with 1YNE - 19,700 atoms - where 355D's 660 lay out identically.
 
+## Plugin probes: what depends on how you run them
+
+`tests/plugin_state.py` holds one claim that needs bytes from outside the tree under test: a viewer
+with no plugin writes the same `to_html()` and `save_state()` as before the plugin work. It can only
+check that against a golden recorded from a tree that has no plugin work, so bare it prints a `SKIP`
+line for the comparison, and the rest runs. Nothing stops running silently -
+read the SKIP. To record the golden once and compare with it:
+
+    python3 tests/plugin_state.py --write-golden /tmp/golden     # in a checkout without the plugin work
+    python3 tests/plugin_state.py --golden /tmp/golden           # in the tree under test: no SKIP
+
+`tests/plugin_browser.py` runs on the default synthetic helix, and on a real structure with
+`PLUGIN_STRUCTURE=<file.pdb>`; outside the maintainer's Mac it needs `PY2DMOL_CHROME=<chrome binary>`.
+A bare pass count is therefore not comparable across machines.
+
 ## Every probe, and which lane runs it
 
 Generated - `python3 tests/index.py --write` - and checked by the node lane, so
@@ -181,6 +196,9 @@ scripts and the by-hand demonstrations; on anything else it is a question.
 | `play_stop.py` | ui | The play button has to survive being pressed WHILE IT IS PLAYING. |
 | `plddt_override.py` | tool | Colouring a few residues by hand must not recolour the whole structure. |
 | `plddt_panel.py` | ui | The confidence trace as a slot view: the tab, the picture, and the drag. |
+| `plugin_browser.py` | gpu | A plugin's wireframe in a REAL browser: both painters, capture, rotation, the key. |
+| `plugin_seam.js` | node | THE PLUGIN SEAM on the 2D painter: registry, render(), paint2d - no browser. |
+| `plugin_state.py` | node | Plugin payloads through the Python side: add, save_state, load_state, the page. |
 | `python_multi.py` | ui | WHAT PYTHON ASKS FOR, AND WHETHER THE PAGE DOES IT. |
 | `python_opacity.py` | gpu | set_opacity from Python: does it reach the picture, and survive a session? |
 | `python_page.py` | ui | The PYTHON api's own page, with two objects, checked in a real browser. |

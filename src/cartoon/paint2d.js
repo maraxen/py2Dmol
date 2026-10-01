@@ -268,7 +268,7 @@ function paintPrims(S) {
             } else if (g.kind === 'line' && g.pts) {
                 // a run: every leg of it occludes
                 for (let j = 0; j + 1 < g.pts.length; j++) {
-                    cap2(g.pts[j], g.pts[j + 1], (g.w + outlineW) / 2 - 1);
+                    cap2(g.pts[j], g.pts[j + 1], (g.w + (g.noInk ? 0 : outlineW)) / 2 - 1);
                 }
             } else if (g.kind === 'joint') {
                 for (let k2 = 1; k2 + 1 < g.q.length; k2++) {
@@ -281,7 +281,7 @@ function paintPrims(S) {
                     tri2(g.q[0], g.q[k2], g.q[k2 + 1]);
                 }
             } else if (g.kind === 'dot' && g.pA) {
-                cap2(g.pA, g.pA, g.r + outlineW / 2 - 1);
+                cap2(g.pA, g.pA, g.r + (g.noInk ? 0 : outlineW / 2) - 1);
             }
         }
         const EPS2 = 0.15;
@@ -513,7 +513,11 @@ function paintPrims(S) {
         // stain, sat on the paper through the whole pencil phase as a
         // smudge in the middle of a drawing that had no colour in it yet.
         if (anim && (animWash <= 0 || chainU(g) > animWash)) continue;
-        const near = nearOf(g.z);
+        // A PLUGIN'S PRIM CAN LIE OUTSIDE THE STRUCTURE'S DEPTH SPAN, which is what
+        // nearOf normalises over: clamp it, as the GPU clamps near01, or a
+        // ball behind the structure extrapolates to paper-white and one in front
+        // past its own colour.
+        const near = g.plugin ? Math.min(1, Math.max(0, nearOf(g.z))) : nearOf(g.z);
         // export culling: a piece whose every sampled corner is clearly
         // behind other geometry paints nothing visible - skip it entirely
         if (exportHidden) {
@@ -1415,7 +1419,9 @@ function paintPrims(S) {
             strokeRound(g.pts, lw, g.c, near, LOOP_DIM, g.ext);
         } else if (g.kind === 'line') {
             const pts = g.pts.map((q2) => [q2[0], q2[1]]);
-            if (paintInkW || g.sel) {
+            // `noInk`: a plugin's stroke is its own colour and nothing else - no
+            // dark rim, and (in the occluder grids) no extra reach for one
+            if ((paintInkW && !g.noInk) || g.sel) {
                 const ink = g.sel ? SELECTION_INK_CSS : inkOf(g, near);
                 ctx.lineCap = 'butt';
                 ctx.strokeStyle = ink;
@@ -1443,7 +1449,7 @@ function paintPrims(S) {
             // below. Its edges are all shared with the legs' own faces, so
             // none of them is ever a silhouette and it carries no ink of
             // its own - it is simply the top of the joint.
-            const nearS = nearOf(g.z);
+            const nearS = g.plugin ? Math.min(1, Math.max(0, nearOf(g.z))) : nearOf(g.z);
             // Same material as the legs it bridges, so the same rule: no
             // facing wash. A joint lies between two sticks that keep their
             // full tone, and fading only this one toward the paper as the
@@ -1523,7 +1529,7 @@ function paintPrims(S) {
             ctx.fill();
             ctx.stroke();
         } else { // dot
-            if (paintInkW || g.sel) {
+            if ((paintInkW && !g.noInk) || g.sel) {
                 const ow = g.sel
                     ? Math.max(paintInkW, SELECTION_INK_WIDTH * 2) : paintInkW;
                 ctx.beginPath();
@@ -1856,7 +1862,8 @@ function paintPrims(S) {
                 // outline), shrunk by 1 like tubes so a bond touching the
                 // ribbon does not eat the ribbon's own edge.
                 for (let k2 = 0; k2 + 1 < g.pts.length; k2++) {
-                    addCapsule(g.pts[k2], g.pts[k2 + 1], (g.w + outlineW) / 2 - 1);
+                    addCapsule(g.pts[k2], g.pts[k2 + 1],
+                        (g.w + (g.noInk ? 0 : outlineW)) / 2 - 1);
                 }
             } else if (g.kind === 'joint') {
                 for (let k2 = 1; k2 + 1 < g.q.length; k2++) {
@@ -1869,7 +1876,7 @@ function paintPrims(S) {
                 addQuad(g.q, g.gs0);
             } else if (g.kind === 'dot' && g.pA) {
                 // lone-position dot: a capsule of zero length is a disc
-                addCapsule(g.pA, g.pA, g.r + outlineW / 2 - 1);
+                addCapsule(g.pA, g.pA, g.r + (g.noInk ? 0 : outlineW / 2) - 1);
             }
         }
         // Depth margin: big enough to ignore surfaces that merely abut
