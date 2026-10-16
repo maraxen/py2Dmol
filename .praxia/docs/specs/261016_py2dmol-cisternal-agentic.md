@@ -70,7 +70,7 @@ heatmaps (`maps`), slots, clip/orient/focus, plugins + payloads, size, backgroun
 | `save_state` / `load_state` | spec or state path | state JSON | existing methods, so a view an agent built round-trips into the notebook and the website |
 | `vocabulary` | - | styles, presets, colour modes, palettes, selector keys, slot views | read off the code, so docs cannot drift |
 | `plugin_check` | plugin JS + sample payload | registry/seam result | runs the existing `tests/plugin_seam.js` harness under node; for the plugin-dev skill |
-| `render_image` | spec, out, format, dpi | PNG/SVG | **DECISION NEEDED - see §1.1** |
+| `render_image` | spec, out, format, dpi, views | PNG/SVG paths | `[screenshot]` extra, Playwright; see §1.1 |
 
 CLI shape (cyclopts via `wire`): `py2dmol inspect`, `py2dmol validate`, `py2dmol render`,
 `py2dmol state save|load`, `py2dmol vocab`, `py2dmol plugin check|scaffold`, plus
@@ -78,24 +78,52 @@ CLI shape (cyclopts via `wire`): `py2dmol inspect`, `py2dmol validate`, `py2dmol
 (recon). Each tool gets a `CliContract` with `json_option` so an agent shell call gets JSON and a
 human gets a table, and exit codes per exception class (spec invalid = 3, structure not found = 4).
 
-### 1.1 The image question - a prior decision this scope would reopen
+### 1.1 The image tool - decided: ship it, through Playwright
+**Decision (2026-10-16, maintainer):** ship `render_image`, using Playwright. To be discussed with
+the co-maintainer on the PR.
+
 CLAUDE.md records that a `view.save_image(path)` (headless Chrome over CDP) was built, tested and
-**removed at the reader's word** - "feels hacky... keep it simple, provide user a html for bulk
-only" - with "do not add it back without a reason the page cannot meet".
+removed - "feels hacky... keep it simple, provide user a html for bulk only" - with "do not add it
+back without a reason the page cannot meet". The reason this time: an agent cannot drop files on
+`render.html`, and a model that cannot SEE the picture cannot critique it. What keeps faith with
+the removal is WHERE it lives: never on `view`, never in `import py2Dmol`'s graph - only in
+`py2Dmol.agent`, so the notebook API stays exactly as it was asked to be.
 
-The agent case may be that reason: an agent cannot drop files on `render.html`, and a model that
-cannot SEE the picture cannot critique it. But it is your call, and there are three honest options:
+**Where Playwright goes - "dev dependency" is not enough for a shipped tool.** A dev dependency is
+not installed for users, so `render_image` would import-fail for everyone but contributors. The
+shape that works:
 
-1. **No image tool.** Agents get `render_html` and use whatever browser tool their harness has.
-   Zero new machinery; agents without a browser are blind.
-2. **Image tool in the `agent` extra only**, never in the notebook wheel's import path: drives
-   `render.html`'s own `window.py2dmolBatch` door (or `toImage`) in headless Chrome, reusing
-   `tests/cdp.py`'s zero-dependency client. Keeps the notebook API untouched, which is what the
-   removal protected; costs a Chrome dependency at runtime, discovered not bundled.
-3. **Defer**: ship 1 now, measure via telemetry how often agents call `render_html` and then
-   ask for a picture, decide on 2 with data.
+```
+extras_require={
+    'agent':      ['cisternal>=0.1.2; python_version>="3.13"'],
+    'screenshot': ['py2Dmol[agent]', 'playwright>=1.4x'],   # pin after S5
+}
+```
 
-My recommendation is 3 then 2, but this scope does not assume either.
+- `render_image` imports Playwright lazily and, when absent, raises a typed error whose CLI exit
+  code (5) and message name the fix: `pip install "py2Dmol[screenshot]" && playwright install
+  chromium`. The other tools never import it.
+- **The browser is a second, separate install.** `pip` brings the Playwright library only;
+  Chromium (~150 MB) comes from `playwright install chromium`. The MCP server must not download a
+  browser silently mid-call. It checks `chromium.executable_path` exists and returns the install
+  command if not; an explicit `py2dmol screenshot setup` runs the install.
+- **The plugin's uvx launch** uses `uvx_from = "py2Dmol[screenshot]=={version}"` so the MCP server
+  has the library; the browser still needs the one-time setup above (Playwright caches it in
+  `~/.cache/ms-playwright`, shared across uvx envs - S6).
+- Playwright also goes in the dev/test group, and `tests/` can move the screenshot probes that
+  hand-roll CDP (`tests/cdp.py`) onto it later - optional, not part of this work.
+
+**How it renders:** loads the same standalone page `render_html` writes (one rendering path, so
+the HTML and the PNG cannot disagree), waits for the viewer's ready state rather than a timeout,
+and exports through the renderer's own `toImage({format, dpi, dataUrl})` - not a page screenshot,
+so dpi, transparency and the SVG-needs-the-2D-painter refusal stay in the one place CLAUDE.md
+says they live. `format`: png | svg; `dpi`; `views` (several camera presets in one call, one
+browser launch); returns paths plus width/height. One browser per MCP server process, reused
+across calls; a CLI call launches and closes.
+
+**Measurements it needs before it ships** (spikes S5-S6, §2): cold launch + first image wall time
+on 1UBQ and 4HHB, a warm second image, and that the PNG matches `toImage` called in a normal page
+byte-for-byte on the 2D painter (GPU pixels are not comparable across page loads - CLAUDE.md).
 
 ### 1.2 Live viewers over MCP - out of scope for v1
 A stateful "open a viewer, keep pushing frames" session (the notebook's BroadcastChannel live
@@ -127,6 +155,10 @@ Claude-Code bundle is static files - `.claude-plugin/plugin.json`, `skills/`, `a
   extra drops the marker and the package's `python_requires` stays low.
 - S2 (*unverified*): Colab's current Python version. Irrelevant to the core (no dependency), but
   it decides whether `%pip install py2Dmol[agent]` in Colab is a no-op extra.
+- S5 (*unverified*): Playwright Chromium runs py2Dmol's WebGL2 GPU painter headless, or falls
+  back to the 2D painter; and the cold/warm timings in §1.1.
+- S6 (*unverified*): a browser installed by `playwright install` is found from inside a uvx
+  ephemeral env (shared `~/.cache/ms-playwright`, matching Playwright version).
 - S3 (*unverified*): `cisternal assets validate` on a manifest whose `uvx_from` carries an extra
   in brackets.
 
@@ -175,7 +207,8 @@ Agents (small, each with one job and a fixed tool list):
   pLDDT" into a validated spec via `inspect_structure` -> `validate_spec` -> `render_html`.
 - **`py2dmol-plugin-developer`** (sonnet) - writes a draw plugin and iterates on `plugin_check`.
 
-No `figure-critic` agent until §1.1 is decided - a critic that cannot see is not one.
+- **`py2dmol-figure-critic`** (sonnet, multimodal) - renders via `render_image` and critiques the
+  picture (occlusion, colour legibility, framing) against the request, then edits the spec.
 
 ## 5. CLI and MCP surfaces - what "makes sense" means here
 
@@ -215,16 +248,16 @@ without `--prerelease`):
 ## 7. Sequencing
 
 0. cisternal 0.1.2 (above) - independent, can go now.
-1. Spikes S1-S4 (an afternoon).
+1. Spikes S1-S6 (an afternoon).
 2. `py2Dmol.agent`: `ViewSpec` + `build` + `inspect_structure` + `validate_spec` + `render_html`
    + `vocabulary`, wired; import-isolation test; extra + entry points.
 3. Telemetry init gate + middleware + our three events.
 4. Manifest, skills, agents; `plugin/` bundle committed; `cisternal assets validate` in CI.
-5. §1.1 decision, then `render_image` or not.
+5. `render_image` behind `[screenshot]` (after S5-S6), then the figure-critic agent.
 
 ## 8. Open decisions for the maintainer
 
-1. §1.1 image tool: none / agent-extra only / defer-and-measure.
+1. ~~§1.1 image tool~~ - decided: Playwright, `[screenshot]` extra (co-maintainer to confirm on the PR).
 2. cisternal 0.1.2 classifier: Beta or Production/Stable.
 3. Where this lands: `sokrypton/py2Dmol` is a shared public repo. Shipping an `agent` extra,
    telemetry (opt-in, local) and a committed `plugin/` there is a co-maintainer decision; the
